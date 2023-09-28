@@ -1,0 +1,11 @@
+cd ../spl
+./spl spl_progs/sample_timer_s13_a1.spl
+./spl spl_progs/os_startup.spl
+./spl spl_progs/int7.spl
+./spl spl_progs/boot_s13_a1.spl
+cd ../expl
+./expl samples/odd.expl
+./expl samples/even.expl
+./expl samples/idle.expl
+cd ../xfs-interface
+./xfs-interface
