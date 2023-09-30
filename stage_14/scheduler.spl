@@ -1,41 +1,53 @@
-print "schSTART";
+//print "schSTART";
 breakpoint;
 //get current pid.
-print "getcurpid";
+//print "getcurpid";
 alias currentPID R0;
 currentPID = [SYSTEM_STATUS_TABLE+1];
-print "gotcurpid";
+//print "gotcurpid";
 
-print "before BP push";
+//print "before BP push";
 //push BP of the current process on top of the stack
 multipush(BP);
-print "after BP push";
+//print "after BP push";
 
-print "obt ptentry";
+//print "obt ptentry";
 //Obtain process table entry corresponding to current PID
 alias process_table_entry R1;
 process_table_entry = PROCESS_TABLE + currentPID * 16;
 
-print "save sp,ptbr,ptlr";
+//print "save sp,ptbr,ptlr";
 //save SP%512, PTBR and PTLR in process table entry of the current process
 [process_table_entry + 12] = SP % 512;
 [process_table_entry + 14] = PTBR;
 [process_table_entry + 15] = PTLR;
 
-//next, scheduler must decide which process to run next. This is done using Round Robin scheduling algorithm. 
-print "starting rr";
+//get current pid.
+//alias currentPID R0; 
+currentPID = [SYSTEM_STATUS_TABLE+1];
+
+//process table entry of current process is computed. Set state of current process as READY
+//alias process_table_entry R1; 
+process_table_entry = PROCESS_TABLE + currentPID * 16; 
+[process_table_entry + 4] = READY;//next, scheduler must decide which process to run next. This is done using Round Robin scheduling algorithm. 
+//print "starting rr";
 //decide which process to run next. 
 alias newPID R2;
 alias new_process_table R3;
 newPID = (currentPID+1)%16;
 new_process_table = PROCESS_TABLE + newPID * 16;
-while([new_process_table + 4] != READY || [new_process_table + 4] != CREATED ) do
+//print "befWhile";
+//print newPID;
+while([new_process_table + 4] != READY && [new_process_table + 4] != CREATED ) do
   newPID = (newPID+1)%16;
   new_process_table = PROCESS_TABLE + newPID * 16;  
+  //print "in rr";
+  //print "newPID";
+  //print newPID;
 endwhile;
-print "Scheduled";
-print "NewPID = ";
-print newPID;
+//print "Scheduled";
+//print "NewPID = ";
+//print newPID;
 
 
 //set SP, PTBR and PTLR. 
@@ -50,7 +62,7 @@ if([new_process_table + 4] == CREATED) then
   SP = [new_process_table + 13];
   [new_process_table + 4] = RUNNING;
   [new_process_table + 9] = 0;
-  print "schCREATEDend";
+  //print "schCREATEDend";
   breakpoint;
   ireturn;
 endif;
@@ -58,7 +70,7 @@ endif;
 //set state of new process to be RUNNING and restore BP of new process from top of its kernel stack. 
 [new_process_table + 4] = RUNNING;
 multipop(BP);
-print "schEND";
+//print "schEND";
 breakpoint;
 
 return;

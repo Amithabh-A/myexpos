@@ -1,4 +1,4 @@
-print "boot start";
+//print "boot start";
 breakpoint;
 
 //Required interrupt routines, library, exeption handler, init
@@ -135,6 +135,6 @@ endwhile;
 [87*512] = [86*512+1];
 
 //return from module to os_startup code.
-print "ret boot";
+//print "ret boot";
 breakpoint;
 return;

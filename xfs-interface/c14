@@ -2,6 +2,8 @@ cd ../spl
 echo in spl
 echo compile sample timer
 ./spl ../stage_14/sample_timer.spl
+echo compile haltprog 
+./spl ../stage_14/haltprog.spl
 echo compile os_startup
 ./spl spl_progs/os_startup.spl
 echo compile scheduler
