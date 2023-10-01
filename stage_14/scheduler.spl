@@ -29,7 +29,9 @@ currentPID = [SYSTEM_STATUS_TABLE+1];
 //process table entry of current process is computed. Set state of current process as READY
 //alias process_table_entry R1; 
 process_table_entry = PROCESS_TABLE + currentPID * 16; 
-[process_table_entry + 4] = READY;//next, scheduler must decide which process to run next. This is done using Round Robin scheduling algorithm. 
+if([process_table_entry + 4] != TERMINATED) then
+  [process_table_entry + 4] = READY;//next, scheduler must decide which process to run next. This is done using Round Robin scheduling algorithm. 
+endif;
 //print "starting rr";
 //decide which process to run next. 
 alias newPID R2;
