@@ -1,0 +1,19 @@
+cd ../spl
+echo os_startup_s12
+./spl spl_progs/os_startup_s12.spl
+echo end os_startup_s12
+echo sample_timer_s12
+./spl spl_progs/sample_timer_s12.spl
+echo end sample_timer_s12
+echo int7 
+./spl spl_progs/int7.spl
+echo end int7 
+cd ../expl
+echo prime 
+./expl ../stage_14/prime.expl
+echo end prime 
+echo idle
+./expl samples/idle.expl
+echo end idle
+cd ../xfs-interface
+./xfs-interface

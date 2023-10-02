@@ -1,0 +1,9 @@
+cd ../spl
+./spl spl_progs/os_startup_s12.spl
+./spl spl_progs/sample_timer_s12.spl
+./spl spl_progs/int7.spl
+cd ../expl
+./expl ../stage_14/prime.expl
+./expl samples/idle.expl
+cd ../xfs-interface
+./xfs-interface

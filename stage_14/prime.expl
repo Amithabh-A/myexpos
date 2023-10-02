@@ -1,0 +1,29 @@
+int main()
+{
+decl
+    int temp,num, n, flag, i, k;
+enddecl
+begin
+	num = 2;
+	while(num <= 100) do
+		flag = 0;
+		i = 2;
+		n = num/2;
+		while(i<n) do
+			k = num%i;
+			if(k == 0) then
+				flag = 1;
+				break;
+			endif;
+			i = i+1;
+		endwhile;
+		if(flag == 0) then
+			write(num);
+		endif;
+		num = num+1;
+	endwhile;
+	return 0;	
+end
+}
+// check whether it is having any factor other than 1 and that number. If not, print the number. 
+// run a loop from 3 to number/2. if any number divides current number, then comtinue. at end print the number. 
