@@ -1,11 +1,11 @@
 * For compilation and running : 
     ```
     cd xfs-interface
-    ./c14
+    ./c15
     ```
     Now, xfs-interface will be running. Run the following command: 
     ```
-    run 14.txt
+    run 15.txt
     ```
         
     Now for running the machine :
@@ -13,17 +13,6 @@
     cd ../xsm
     ./xsm
     ```                                                                                     
-> All user files, boot module, haltprog and scheduler module code for stage-14 are in stage-14 directory. All other system programs are in `myexpos/spl/spl-progs` directory. idle code is in `myexpos/expl/samples` directory. For any doubts related to file locations kindly check `c14` in `myexpos/xfs-interface` directory. 
+> All user files, modules and interrupts for stage-15 are in stage-15 directory. All other system programs are in `myexpos/spl/spl-progs` directory. idle code is in `myexpos/expl/samples` directory. For any doubts related to file locations kindly check `c14` in `myexpos/xfs-interface` directory. 
 
-* For compilation and running of Assignment 1
-    ```
-    cd xfs-interface
-    ./c14-a1
-    ```
-    ```
-    run 14-a1.txt
-    ```
-    ```
-    cd ../xsm
-    ./xsm
-    ```            
+> Assignment yet to complete.
