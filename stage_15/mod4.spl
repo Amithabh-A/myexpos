@@ -1,0 +1,32 @@
+//This is Device manager module
+//In this stage, we will implement only teminal write function in this module. 
+
+//function number and current PID
+alias functionNum R1;
+alias currentPID R2;
+
+//terminal write has function number 3. 
+if(functionNum == TERMINAL_WRITE) then
+	//calling acquire terminal
+	multipush(R1, R2); 	
+	R1 = 8;
+	R2 = [SYSTEM_STATUS_TABLE+1];
+	call MOD_0;
+	multipop(R1, R2); 	
+	//print "before";
+	print R3;
+	//print "after";
+
+	//calling release terminal
+	multipush(R1, R2, R3); 	
+	R1 = 9;
+	R2 = [SYSTEM_STATUS_TABLE+1];
+	//print "mod0 s";
+	call MOD_0;
+	//print "mod0 e";
+	R4 = R0;
+	multipop(R1, R2, R3); 	
+	return;
+else 
+	return;
+endif;

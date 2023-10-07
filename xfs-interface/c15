@@ -1,0 +1,46 @@
+cd ../spl
+echo in spl
+
+echo compile sample timer
+./spl ../stage_15/sample_timer.spl
+
+echo compile haltprog 
+./spl ../stage_15/haltprog.spl
+
+echo compile os_startup
+./spl spl_progs/os_startup.spl
+
+echo compile scheduler
+./spl ../stage_15/scheduler.spl
+
+echo compile int7
+./spl ../stage_15/int7.spl
+
+echo compile boot
+./spl ../stage_15/boot.spl
+
+echo compile mod 0
+./spl ../stage_15/mod0.spl
+
+echo compile mod 4
+./spl ../stage_15/mod4.spl
+
+echo in expl
+cd ../expl
+
+echo compile odd
+./expl ../stage_15/odd.expl
+
+echo compile even
+./expl ../stage_15/even.expl
+
+echo compile prime
+./expl ../stage_15/prime.expl
+
+echo compile idle
+./expl samples/idle.expl
+
+echo in xfs-interface
+cd ../xfs-interface
+
+./xfs-interface

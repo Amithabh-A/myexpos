@@ -1,0 +1,2 @@
+cd ../spl/spl_progs
+vim os_startup.spl
