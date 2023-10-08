@@ -1,4 +1,4 @@
-breakpoint;
+// code : os_startup
 
 //load module 7 from disk(blocks 67 and 68) to memory(pages 54 and 55). Load idle process.
 loadi(54,67);
