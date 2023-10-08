@@ -3,7 +3,6 @@
 // RELEASE_TERMINAL = 9
 // RESOURCE_MANAGER = MOD_0 = 20480
 
-
 //This is Device manager module
 //In this stage, we will implement only teminal write function in this module. 
 
@@ -33,7 +32,7 @@ if(functionNum == TERMINAL_WRITE) then
 	R2 = [SYSTEM_STATUS_TABLE+1];
 
 	call RESOURCE_MANAGER;
-
+	
 	R4 = R0;
 	multipop(R1, R2, R3); 	
 	return;
@@ -43,6 +42,7 @@ endif;
 //terminal write has function number 4. 
 if(functionNum == TERMINAL_READ) then
 
+	print "terReadStart";
 	//calling acquire terminal
 	multipush(R1, R2); 	
 	R1 = ACQUIRE_TERMINAL;
@@ -80,6 +80,8 @@ if(functionNum == TERMINAL_READ) then
 
 	// store the value present in input buffer field of process table to the obtained physical address of the word
 	[PhysicalAddr] = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1] * 16 + 8];
+
+	print "terReadEnd";
 
 	return;
 endif;

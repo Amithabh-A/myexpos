@@ -15,7 +15,6 @@ userSP = SP;
 SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 11]*512 - 1;
 
 // Retrieve the file descriptor from the user stack, stored at userSP-4
-// --------------------------------------------------------------------------------
 //arg2 is in userSP-4. Manual address translation done to get value at UserSP-4.
 alias physicalPageNum R1;
 alias offset R2;
@@ -25,7 +24,6 @@ offset = (userSP - 4) % 512;
 fileDescPhysicalAddr = (physicalPageNum * 512) + offset;
 alias fileDescriptor R4;
 fileDescriptor=[fileDescPhysicalAddr];
-// --------------------------------------------------------------------------------
 
 if (fileDescriptor != -1)
 then
@@ -38,7 +36,6 @@ else
      	alias word R5;
      	word = [[PTBR + 2 * ((userSP - 3) / 512)] * 512 + ((userSP - 3) % 512)];
 
-	//------------------------------------------------------------------------------
 	// push all registers used till now in this interrupt in kernel stack
 	multipush(R0, R1, R2, R3, R4, R5); // number of registers will depend on your code
 	
@@ -58,7 +55,6 @@ else
 	// There is no return value for read. 
 
 	multipop(R0, R1, R2, R3, R4, R5); 
-	//------------------------------------------------------------------------------
 
      	//store return value 0 in the user stack indicating success
      	alias physicalAddrRetVal R6;

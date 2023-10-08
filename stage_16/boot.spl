@@ -1,6 +1,3 @@
-print "boot start";
-breakpoint;
-
 // code : boot module
 // third process(printing even nos from 1 to 100) is disabled. To reenable, uncomment line 60 and line 159.   
 // fourth process(printing prime nos from 1 to 100) is disabled. To reenable, uncomment line 63 and line 212.   
@@ -219,6 +216,4 @@ PTLR = 10;
 
 //-------------------------------------------------------------------------------------
 
-print "boot end";
-breakpoint;
 return;

@@ -1,7 +1,6 @@
-// code : scheduler
+print "schStart";
 
-print "start sch";
-breakpoint;
+// code : scheduler
 
 //push BP of the current process on top of the stack
 multipush(BP);
@@ -20,9 +19,6 @@ if([PROCESS_TABLE + currentPID * 16 + 4] != TERMINATED) then
   [PROCESS_TABLE + currentPID * 16 + 4] = READY; 
 endif;
 
-print "rbefore rr";
-breakpoint;
-
 // scheduler must decide which process to run next.
 // Round Robin Scheduling Algorithm
 
@@ -31,9 +27,6 @@ newPID = (currentPID+1)%16;
 while([PROCESS_TABLE + newPID * 16 + 4] != READY && [PROCESS_TABLE + newPID * 16 + 4] != CREATED ) do
   newPID = (newPID+1)%16;
 endwhile;
-
-print "after rr";
-breakpoint;
 
 //set SP, PTBR and PTLR. 
 SP = [PROCESS_TABLE + newPID * 16 + 11] * 512 + [PROCESS_TABLE + newPID * 16 + 12] % 512;
@@ -56,7 +49,6 @@ endif;
 //set state of new process to be RUNNING and restore BP of new process from top of its kernel stack. 
 [PROCESS_TABLE + newPID * 16 + 4] = RUNNING;
 multipop(BP);
-print "stop scheduler";
-breakpoint;
 
+print "schEnd";
 return;

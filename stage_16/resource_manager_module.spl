@@ -1,9 +1,12 @@
+// code : resource manager module
+// CONSTANTS : 
+
 // function number present in R1 and PID passed as an argument in R2. 
 alias functionNum R1;
 alias currentPID R2;
 
 //acquire terminal function
-if(functionNum == 8) then 
+if(functionNum == ACQUIRE_TERMINAL) then 
 	while([TERMINAL_STATUS_TABLE] == 1) do
 		alias currentPID R3; 
 		currentPID = [SYSTEM_STATUS_TABLE+1];
@@ -11,7 +14,10 @@ if(functionNum == 8) then
 		process_table_entry = PROCESS_TABLE + currentPID * 16; 
 		[process_table_entry + 4] = WAIT_TERMINAL;
 		multipush(R1, R2, R3, R4);
+
+
 		call SCHEDULER;
+
 		//this code will be executed only after the scheduler schedules the process again, 
 		//whilch in turn occur only after the terminal was released by the holding process by invoking the release terminal function. 
 		multipop(R1, R2, R3, R4);
@@ -22,7 +28,8 @@ if(functionNum == 8) then
 endif;
 
 //Release terminal function
-if(functionNum == 9) then 
+if(functionNum == RELEASE_TERMINAL) then 
+	print "StartReleaseTer";
 	if([SYSTEM_STATUS_TABLE+1] != [TERMINAL_STATUS_TABLE+1]) then
 		R0 = -1;
 		return;
@@ -39,5 +46,6 @@ if(functionNum == 9) then
 		counter = counter + 1;
 	endwhile;
 	R0 = 0;
+	print "endReleaseTer";
 	return;
 endif;

@@ -1,4 +1,6 @@
-// code : Console interrupt handler
+print "cihStart";
+
+// code : Console/terminal interrupt handler
 
 // change stack from user to kernel(using process table)
 [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 13] = SP;
@@ -13,6 +15,7 @@ reqPID = [TERMINAL_STATUS_TABLE+1];
 // the input entered in console is saved in port P0 by the xsm machine. Copy the value present in P0 into the input buffer field of the process table entry of process which acqured terminal. 
 [PROCESS_TABLE + reqPID * 16 + 8] = P0;
 
+print [PROCESS_TABLE + reqPID * 16 + 8];
 
 // Next step : Release the terminal 
 
@@ -31,4 +34,7 @@ restore;
 
 SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 13];
 
+print "cihEnd";
+
+print [SYSTEM_STATUS_TABLE+1];
 ireturn;
