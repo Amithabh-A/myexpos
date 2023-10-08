@@ -1,0 +1,85 @@
+// CONSTANTS
+// ACQUIRE_TERMINAL = 8
+// RELEASE_TERMINAL = 9
+// RESOURCE_MANAGER = MOD_0 = 20480
+
+
+//This is Device manager module
+//In this stage, we will implement only teminal write function in this module. 
+
+//function number and current PID
+alias functionNum R1;
+alias currentPID R2;
+
+
+//terminal write has function number 3. 
+if(functionNum == TERMINAL_WRITE) then
+
+	//calling acquire terminal
+	multipush(R1, R2); 	
+	R1 = ACQUIRE_TERMINAL;
+	R2 = [SYSTEM_STATUS_TABLE+1];
+
+	call RESOURCE_MANAGER;
+
+	// NOTE : This code will be executed only after the scheduler schedules the process again, which in turn occurs only after the terminal was released by the holding process by invoking the release terminal function
+	multipop(R1, R2); 	
+
+	print R3;
+
+	//calling release terminal
+	multipush(R1, R2, R3); 	
+	R1 = RELEASE_TERMINAL;
+	R2 = [SYSTEM_STATUS_TABLE+1];
+
+	call RESOURCE_MANAGER;
+
+	R4 = R0;
+	multipop(R1, R2, R3); 	
+	return;
+endif;
+
+
+//terminal write has function number 4. 
+if(functionNum == TERMINAL_READ) then
+
+	//calling acquire terminal
+	multipush(R1, R2); 	
+	R1 = ACQUIRE_TERMINAL;
+	R2 = [SYSTEM_STATUS_TABLE+1];
+
+	call RESOURCE_MANAGER;
+
+	// NOTE : This code will be executed only after the scheduler schedules the process again, which in turn occurs only after the terminal was released by the holding process by invoking the release terminal function
+	multipop(R1, R2); 	
+
+	read;
+
+	//change the state of the current process to wait_terminal
+	[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1] * 16 + 4] = WAIT_TERMINAL;
+
+	//invoking context switch module
+	multipush(R1, R2);
+	call SCHEDULER;
+	
+	//after return from scheduler
+	multipop(R1, R2);
+
+	//The logical address of the word where data has to be stored is in R3. Convert this logical address to physical address. 	
+	//---------####################------------------_####################_------------ WRITE YOUR CODE --------------_#################_______________
+
+	alias physicalPageNum R4; 
+	alias offset R5; 
+	alias PhysicalAddr R6; 
+	physicalPageNum = [PTBR + 2 * ([R3]/ 512)];
+	offset = [R3] % 512;
+	PhysicalAddr = (physicalPageNum * 512) + offset;
+
+	//---------####################------------------_####################_------------ WRITE YOUR CODE --------------_#################_______________
+
+
+	// store the value present in input buffer field of process table to the obtained physical address of the word
+	[PhysicalAddr] = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1] * 16 + 8];
+
+	return;
+endif;

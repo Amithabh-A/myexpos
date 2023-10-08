@@ -1,0 +1,28 @@
+int main()
+{
+decl
+    int temp,A, B;
+enddecl
+begin
+break;
+	A = 0;
+	B = 0;
+	//temp = exposcall ( "Read" , -1, A );
+	//temp = exposcall ( "Read" , -1, B );
+	break;
+	read(A);
+	break;
+	read(B);
+	while(B != 0) do
+		if(B>A) then
+			A = A + B;
+			B = A - B;
+			A = A - B;
+		else 
+			A = A - B;
+		endif;
+	endwhile;
+	write(A);
+	return 0;
+end
+}

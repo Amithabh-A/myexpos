@@ -1,0 +1,77 @@
+//code : system call interrupt of read system call
+
+// CONSTANTS
+// DEVICE_MANAGER = MOD_4 = 24576
+
+//set MODE flag to system call number which is 7 for read system call.
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16+9] = 7;
+
+//store value of user SP for future computations
+alias userSP R0;
+userSP = SP;
+
+//switch stack from user stack to kernel stack
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 13] = SP;
+SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 11]*512 - 1;
+
+// Retrieve the file descriptor from the user stack, stored at userSP-4
+// --------------------------------------------------------------------------------
+//arg2 is in userSP-4. Manual address translation done to get value at UserSP-4.
+alias physicalPageNum R1;
+alias offset R2;
+alias fileDescPhysicalAddr R3;
+physicalPageNum = [PTBR + 2 * ((userSP - 4)/ 512)];
+offset = (userSP - 4) % 512;
+fileDescPhysicalAddr = (physicalPageNum * 512) + offset;
+alias fileDescriptor R4;
+fileDescriptor=[fileDescPhysicalAddr];
+// --------------------------------------------------------------------------------
+
+if (fileDescriptor != -1)
+then
+     	//store -1 to return.
+     	alias physicalAddrRetVal R5;
+     	physicalAddrRetVal = [PTBR + 2 * (userSP-1)/512]*512 + (userSP-1)%512;
+     	[physicalAddrRetVal] = -1;
+else
+	// Retrieve the word address sent as an argument from the user (userSP-3)
+     	alias word R5;
+     	word = [[PTBR + 2 * ((userSP - 3) / 512)] * 512 + ((userSP - 3) % 512)];
+
+	//------------------------------------------------------------------------------
+	// push all registers used till now in this interrupt in kernel stack
+	multipush(R0, R1, R2, R3, R4, R5); // number of registers will depend on your code
+	
+	//store function number of terminal write in R1
+	R1 = TERMINAL_READ;//TERMINAL_READ = 4
+	
+	//store PID of current process in R2
+	R2 = [SYSTEM_STATUS_TABLE+1];
+	
+	// store word address to which we have to write the word
+	//word = [[PTBR + 2 * ((userSP - 3) / 512)] * 512 + ((userSP - 3) % 512)];
+	R3 = word;
+	
+	//call module 4
+	call DEVICE_MANAGER;
+
+	// There is no return value for read. 
+
+	multipop(R0, R1, R2, R3, R4, R5); 
+	//------------------------------------------------------------------------------
+
+     	//store return value 0 in the user stack indicating success
+     	alias physicalAddrRetVal R6;
+     	physicalAddrRetVal = ([PTBR + 2 * (userSP - 1)/ 512] * 512) + ((userSP - 1) % 512);
+     	[physicalAddrRetVal] = 0;
+endif;
+
+
+//reset mode value to 0
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+
+//set SP to userSP
+SP = userSP;
+
+//pass control back
+ireturn;
