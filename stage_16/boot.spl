@@ -1,4 +1,4 @@
-rint "boot start";
+print "boot start";
 breakpoint;
 
 // code : boot module

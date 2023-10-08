@@ -4,15 +4,8 @@ decl
     int temp,A, B;
 enddecl
 begin
-break;
-	A = 0;
-	B = 0;
-	//temp = exposcall ( "Read" , -1, A );
-	//temp = exposcall ( "Read" , -1, B );
-	break;
-	read(A);
-	break;
-	read(B);
+	temp = exposcall ( "Read" , -1, A );
+	temp = exposcall ( "Read" , -1, B );
 	while(B != 0) do
 		if(B>A) then
 			A = A + B;
