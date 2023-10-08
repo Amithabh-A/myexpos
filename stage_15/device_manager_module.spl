@@ -1,3 +1,9 @@
+// CONSTANTS
+// ACQUIRE_TERMINAL = 8
+// RELEASE_TERMINAL = 9
+// RESOURCE_MANAGER = MOD_0 = 20480
+
+
 //This is Device manager module
 //In this stage, we will implement only teminal write function in this module. 
 
@@ -7,23 +13,26 @@ alias currentPID R2;
 
 //terminal write has function number 3. 
 if(functionNum == TERMINAL_WRITE) then
+
 	//calling acquire terminal
 	multipush(R1, R2); 	
-	R1 = 8;
+	R1 = ACQUIRE_TERMINAL;
 	R2 = [SYSTEM_STATUS_TABLE+1];
-	call MOD_0;
+
+	call RESOURCE_MANAGER;
+
+	// NOTE : This code will be executed only after the scheduler schedules the process again, which in turn occurs only after the terminal was released by the holding process by invoking the release terminal function
 	multipop(R1, R2); 	
-	//print "before";
+
 	print R3;
-	//print "after";
 
 	//calling release terminal
 	multipush(R1, R2, R3); 	
-	R1 = 9;
+	R1 = RELEASE_TERMINAL;
 	R2 = [SYSTEM_STATUS_TABLE+1];
-	//print "mod0 s";
-	call MOD_0;
-	//print "mod0 e";
+
+	call RESOURCE_MANAGER;
+
 	R4 = R0;
 	multipop(R1, R2, R3); 	
 	return;
