@@ -1,34 +1,25 @@
 // code : Timer interrupt handler
 
-//save val of userSP to process table. obtain PID from SystemStatusTable to get PID.
+// change stack from user to kernel(using process table)
 [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 13] = SP;
-////print SP;
-//set SP to kernel stack. User Area Page Number is 11th entry in process table. Set value of SP as address*512-1
 SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 11]*512 - 1;
-//save contents of machine registers in stack using backup instruction.
+
 backup;
 
 //get current pid.
 alias currentPID R0;
 currentPID = [SYSTEM_STATUS_TABLE+1];
 
-//process table entry of current process is computed. Set state of current process as READY
+// Set state of current process as READY
 alias process_table_entry R1;
-process_table_entry = PROCESS_TABLE + currentPID * 16;
-[process_table_entry + 4] = READY;
+[PROCESS_TABLE + currentPID * 16 + 4] = READY;
 
-//print "schedulercall";
-breakpoint;
 //calling scheduler. 
 call SCHEDULER;
-//print "camefrom sch";
-breakpoint;
 
 //restore user context from kernel stack and set SP to user stack.
 restore;
 
 SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 13];
 
-//print "timerEND";
-breakpoint;
 ireturn;
