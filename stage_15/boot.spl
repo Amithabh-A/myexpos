@@ -1,5 +1,5 @@
-//print "boot start";
-//breakpoint;
+// code : boot module
+// third process(printing prime nos from 1 to 100) is disabled. To reenable, uncomment line 54 and line 203.   
 
 //initialize state field of all process table entries other than idle process to be terminated. 
 alias counter R0; 
@@ -207,7 +207,4 @@ PTLR = 10;
 
 //-------------------------------------------------------------------------------------
 
-//return from module to os_startup code.
-//print "ret boot";
-//breakpoint;
 return;

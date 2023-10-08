@@ -2,13 +2,13 @@ cd ../spl
 echo in spl
 
 echo compile sample timer
-./spl ../stage_15/sample_timer.spl
+./spl ../stage_15/timer_interrupt_handler.spl
 
 echo compile haltprog 
 ./spl ../stage_15/haltprog.spl
 
 echo compile os_startup
-./spl spl_progs/os_startup.spl
+./spl ../spl_progs/os_startup.spl
 
 echo compile scheduler
 ./spl ../stage_15/scheduler.spl
@@ -20,10 +20,10 @@ echo compile boot
 ./spl ../stage_15/boot.spl
 
 echo compile mod 0
-./spl ../stage_15/mod0.spl
+./spl ../stage_15/resource_manager_module.spl
 
 echo compile mod 4
-./spl ../stage_15/mod4.spl
+./spl ../stage_15/device_manager_module.spl
 
 echo in expl
 cd ../expl

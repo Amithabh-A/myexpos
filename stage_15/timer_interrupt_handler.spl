@@ -1,5 +1,4 @@
-//print "timerSTART";
-breakpoint;
+// code : Timer interrupt handler
 
 //save val of userSP to process table. obtain PID from SystemStatusTable to get PID.
 [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 13] = SP;
