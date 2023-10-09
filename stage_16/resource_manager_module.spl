@@ -28,6 +28,8 @@ if(functionNum == ACQUIRE_TERMINAL) then
 endif;
 
 //Release terminal function
+//$$$$$$$$$$$$$$$$$$  INFO : see, the release terminal only make pid of the terminal status table as zero and set all the process having state wait_terminal as ready. Nothing else. $$$$$$$$$$$$$$$$ 
+
 if(functionNum == RELEASE_TERMINAL) then 
 	print "StartReleaseTer";
 	if([SYSTEM_STATUS_TABLE+1] != [TERMINAL_STATUS_TABLE+1]) then

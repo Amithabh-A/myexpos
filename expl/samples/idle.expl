@@ -6,7 +6,6 @@ int main()
 	begin
 		while(1==1) do
 			a=-1;
-			breakpoint;
 			//write(a);
 		endwhile;
 		return 0;
