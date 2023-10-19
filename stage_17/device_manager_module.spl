@@ -65,9 +65,6 @@ if(functionNum == TERMINAL_READ) then
 
 	//The logical address of the word where data has to be stored is in R3. Convert this logical address to physical address. 	
 
-        //print "R3";
-	//print R3;
-
 	// physicalPageNumber = [PTBR + 2 * ([R3]/ 512)];
 	// offset = [R3] % 512;
 	alias PhysicalAddr R6; 
@@ -75,8 +72,6 @@ if(functionNum == TERMINAL_READ) then
 
 	// store the value present in input buffer field of process table to the obtained physical address of the word
 	[PhysicalAddr] = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1] * 16 + 8];
-	//print "here";
-	//print PhysicalAddr;
 
 	return;
 endif;

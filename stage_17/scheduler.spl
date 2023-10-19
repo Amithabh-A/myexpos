@@ -33,9 +33,6 @@ if([PROCESS_TABLE + newPID * 16 + 4] == CREATED) then
   SP = [PROCESS_TABLE + newPID * 16 + 13];
   [PROCESS_TABLE + newPID * 16 + 4] = RUNNING;
  [PROCESS_TABLE + newPID * 16 + 9] = 0;
-  //print "ireturn from sch";
-  //print "pid";
-  //print [SYSTEM_STATUS_TABLE+1];
   ireturn;
 endif;
 

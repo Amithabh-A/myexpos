@@ -1,5 +1,29 @@
-## Debugging manual
+* For compilation and running : 
+    ```
+    cd xfs-interface
+    ./c16
+    ```
+    Now, xfs-interface will be running. Run the following command: 
+    ```
+    run 16.txt
+    ```
+        
+    Now for running the machine :
+    ```
+    cd ../xsm
+    ./xsm
+    ```                                                                                     
 
-# Checkpoints
-* int6 is ireturning at last. 
-* in device_manager_module, value stored in R3 is taken by [R3]. 
+* For compilation and running of Assignment 1
+    ```
+    cd xfs-interface
+    ./c16-a1
+    ```
+    ```
+    run 16-a1.txt
+    ```
+    ```
+    cd ../xsm
+    ./xsm
+    ```            
+> Assignment 1 bubble sort is not correct. 

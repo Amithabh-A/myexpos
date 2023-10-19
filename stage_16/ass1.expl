@@ -1,0 +1,43 @@
+
+decl
+    int A[100];
+    int temp,n,n1, i, j, swapped;
+enddecl
+int main()
+{
+begin
+	n =  0;
+	i = 0;
+	j = 0;
+	swapped = 0;
+	temp = exposcall ( "Read" , -1, n );
+	n1 = 0;
+	while(n1 != n) do
+		temp = exposcall("Read", -1, A[n1]);
+		n1 = n1 + 1;
+	endwhile;
+
+	i = 0;
+	while(n1<(n-1)) do
+		j = 0;
+		while(j < ( n - i - 1)) do 
+			if(A[j] > A[j+1]) then
+				temp = A[j];
+				A[j] = A[j+1];
+				A[j+1] = A[j];
+			endif;
+			j = (j+1);
+		i = (i + 1);
+		endwhile;
+	endwhile;
+
+	n1 = 0;
+	write("print");
+        while(n1 != n) do
+                temp = exposcall("Write", -2, A[n1]);
+		n1 = n1+1;
+        endwhile;
+	write("end");
+	return 0;
+end
+}

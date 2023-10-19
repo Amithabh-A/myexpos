@@ -1,10 +1,9 @@
 //code : system call interrupt of read system call
 
-// print "stint6";
-
-
 // CONSTANTS
 // DEVICE_MANAGER = MOD_4 = 24576
+
+// NOTE : wordAddr should contain the logical address of the word and that should be translated in device_manager_module. But here the physical address of word is passing as argument. 
 
 //set MODE flag to system call number which is 7 for read system call.
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16+9] = 7;
@@ -39,12 +38,8 @@ else
 	R2 = [SYSTEM_STATUS_TABLE+1];
 	R3 = wordAddr;
 	
-	//print "Sdmm from int6";
-
 	//call module 4
 	call DEVICE_MANAGER;
-
-	//print "Edmm from int6";
 
 	// There is no return value for read. 
 	multipop(R0, R4, R5); 
@@ -59,10 +54,5 @@ endif;
 
 //set SP to userSP
 SP = userSP;
-
-//print "is it fail";
-//print [[PTBR + 2 * (SP / 512)] * 512 + (SP % 512)];
-
-//print "endint6";
 
 ireturn;

@@ -18,6 +18,7 @@ if(functionNum == 8) then
 	endwhile;
 	[TERMINAL_STATUS_TABLE] = 1;
 	[TERMINAL_STATUS_TABLE+1] = [SYSTEM_STATUS_TABLE+1];
+	breakpoint;
 	return;
 endif;
 
@@ -39,5 +40,6 @@ if(functionNum == 9) then
 		counter = counter + 1;
 	endwhile;
 	R0 = 0;
+	breakpoint;
 	return;
 endif;
