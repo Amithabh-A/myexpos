@@ -1,0 +1,132 @@
+//This is process manager module
+
+// CONSTANTS
+// EXIT_PROCESS = 3
+// FREE_PAGE_TABLE = 4
+// FREE_USER_AREA_PAGE = 2
+// RELEASE_PAGE = 2
+// MEMORY_MANAGER = MOD_2 = 22528
+
+
+// NOTE : Exit process : to deallocate the pages and to terminate the invoking process, also releases the user area page of the process. 
+// NOTE : Free Page Table : for every valid entry in the page table of the process except library pages, the corresponding page is freed by 
+//                          calling release page function in process manager module. 
+
+// According to the function number value present in R1, implement different functions in module. 
+
+// Function number, arguments and return value
+alias functionNum R1;
+alias argument R2;
+
+if(R1 == EXIT_PROCESS) then
+  // extract PID of the invoking process from the corresponding register
+  alias PID R2;
+  
+  // invoke the free page table function with same PID to deallocate the page table entries
+
+  // push all registers used till now in this interrupt in kernel stack
+	multipush(R1, R2); 
+	
+	// R1 : function number of free page table function
+  // R2 : PID of the process of which page table entries need to be deallocated.  
+  // R3 : return value (nothing here)
+	R1 = FREE_PAGE_TABLE;
+	R2 = PID;
+	
+	//call module 1
+	call PROCESS_MANAGER;
+
+	multipop(R1, R2); 
+
+  // invoke free user area page function with the same PID to free the user area page. 
+
+  // push all registers used till now in this interrupt in kernel stack
+	multipush(R1, R2); 
+	
+	// R1 : function number of free user area page function
+  // R2 : PID of the process of which user area page needs to be freed(which is the current process).  
+  // R3 : return value (nothing here)
+	R1 = FREE_USER_AREA_PAGE;
+	R2 = PID;
+	
+	//call module 1
+	call PROCESS_MANAGER;
+
+	multipop(R1, R2); 
+
+  // set state of the process as terminated and return to the caller. 
+  [PROCESS_TABLE + PID * 16 + 4] = TERMINATED;
+  return;
+
+endif;
+
+if(R1 == FREE_PAGE_TABLE) then
+  alias PID R2;
+
+  PTBR = PAGE_TABLE_BASE + PID * 10;
+  PTLR = 10;
+
+  // invalidate the page table entries for the library pages by setting page number as -1 and auxillary data as "0000" for each entry.  
+  [PTBR+0] = -1;
+  [PTBR+1] = "0000";
+  [PTBR+2] = -1;
+  [PTBR+3] = "0000";
+
+  // for each valid entry in the page table, release the page by invoking the release page function and invalidate the entry. 
+  // index denote the ith page table entry. 
+  alias index R0;
+  index = 2;
+  while(index < 10) do
+    if([PTBR + index*2] != -1) then
+      // we have to modify permissions ig. 
+      [PTBR + index*2 + 1] = "0000";
+    
+      // push all registers used till now in this interrupt in kernel stack
+	    multipush(R0, R1, R2); 
+	
+	    // R1 : function number of release page function in memory manager module. 
+      // R2 : Page Number 
+      // R3 : return value (nothing here)
+	    R1 = RELEASE_PAGE;
+	    R2 = [PTBR + index*2];
+	
+	    //call module 2
+	    call MEMORY_MANAGER;
+
+	    multipop(R0, R1, R2); 
+
+    endif;
+    index = index + 1;
+  endwhile;
+
+  // return to the caller. 
+  return;
+
+endif;
+
+if(R1 == FREE_USER_AREA_PAGE) then 
+  alias PID R2;
+
+  // obtain user area page number from the process table entry corresponding to the PID given as argument. 
+  alias UAPN R0;
+  UAPN = [PROCESS_TABLE + PID * 16 + 11];
+
+  // free the user area page by invoking release page function. 
+
+  // push all registers used till now in this interrupt in kernel stack
+	    multipush(R0, R1, R2); 
+	
+	    // R1 : function number of release page function in memory manager module. 
+      // R2 : Page Number 
+      // R3 : return value (nothing here)
+	    R1 = RELEASE_PAGE;
+	    R2 = UAPN;
+	
+	    //call module 2
+	    call MEMORY_MANAGER;
+
+	    multipop(R0, R1, R2);
+
+      // return to the caller
+      return;
+endif;

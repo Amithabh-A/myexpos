@@ -1,0 +1,8 @@
+//This is process manager module
+
+// CONSTANTS
+
+// Function number, arguments and return value
+alias functionNum R1;
+alias argument R2;
+
