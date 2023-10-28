@@ -4,7 +4,7 @@ echo in spl
 echo compile timer interrupt handler
 ./spl ../stage_16/timer_interrupt_handler.spl
 
-echo compile console interrupt handler
+compile console interrupt handler
 ./spl ../stage_16/console_interrupt_handler.spl
 
 echo compile haltprog 

@@ -44,8 +44,8 @@ else
 	// There is no return value for read. 
 	multipop(R0, R4, R5); 
 
-     	//store return value 0 in the user stack indicating success
-     	[[PTBR + 2 * (userSP - 1)/ 512] * 512 + (userSP - 1) % 512] = 0;
+  //store return value 0 in the user stack indicating success
+  [[PTBR + 2 * (userSP - 1)/ 512] * 512 + (userSP - 1) % 512] = 0;
 endif;
 
 
