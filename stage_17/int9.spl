@@ -1,4 +1,5 @@
 //code : system call interrupt of exec system call
+print "int9";
 
 // CONSTANTS
 // MAX_FILE_NUM : eXpFS permits a maximum of MAX_FILE_NUM files in inode table.  
@@ -8,15 +9,31 @@
 // MEMORY_FREE_LIST : starting address of memory free list. 
 // MAX_MEM_PAGE : No of memory pages available to the process. 
 
-// NOTE : wordAddr should contain the logical address of the word and that should be translated in device_manager_module. But here the physical address of word is passing as argument. 
+// NOTE : File Types 
+//          3 types of files : ROOT, DATA, EXEC
+//        1. ROOT : file is a root file. 
+//        2. DATA : file is a data file. 
+//        3. EXEC : file is an executable file. 
+
+// NOTE : fdisk
+//          fdisk command converts raw disk into the file system format recognised by expos operating system. 
+//          it initialises the following data structures : 
+//            1. disk free list
+//            2. inode table
+//            3. root file
+
 // NOTE : Each Inode table entry consists of 16 words
-// NOTE : memory free list entry denote the number of processes using(sharing) the memory pages. Unused pages are indicated by 0 in the corresponding entry in memory free list. 
+
+// NOTE : memory free list 
+//          memory free list entry denote the number of processes using(sharing) the memory pages. 
+//          Unused pages are indicated by 0 in the corresponding entry in memory free list. 
+
 // IMPORTANT NOTE : To check whether a file is in xexe format, it should have a header and code, code section contain program instructions
 // (whih we cannot check for validity), 
 // heder section contains the infoemation like size of the text and data segments in the file. (we can't check the information and all. )
 // can we chack whether the file have two sections? No actually. 
 
-//set MODE flag to system call number which is 7 for read system call.
+//set MODE flag to system call number which is 7 for exec system call.
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16+9] = 7;
 
 // Save user stack value for later use, set up the kernel stack. 
@@ -43,9 +60,11 @@ fileName=[[PTBR + 2 * ((userSP - 4) / 512)] * 512 + ((userSP - 4) % 512)];
 alias fileNum R5;
 fileNum = 0;
 while(fileNum < MAX_FILE_NUM) do
+  print [INODE_TABLE + fileNum * 16 + 1];
   if(fileName == [INODE_TABLE + fileNum * 16 + 1]) then
     break;
   endif;
+  fileNum = fileNum + 1;
 endwhile;
 
 if (fileNum == MAX_FILE_NUM) then
@@ -157,19 +176,11 @@ else
   alias index R6;
   index = 0;
   while(index < 4) do
-    if([INODE_TABLE + [SYSTEM_STATUS_TABLE+1] * 16 + 6 + index] != -1) then
+    print "here";
+    if([INODE_TABLE + [SYSTEM_STATUS_TABLE+1] * 16 + 8 + index] != -1) then
 
-      multipush(R0, R4, R5, R6); 
-	
-  	  R1 = GET_FREE_PAGE;
-	
-	    call MEMORY_MANAGER;
-      [PTBR+ 8 + 2*index ] = R3;
+      [PTBR+ 8 + 2*index ] = [INODE_TABLE + [SYSTEM_STATUS_TABLE+1] * 16 + 8 + index];
       [PTBR+ 9 + 2*index ] = "0110";
-
-      loadi(R3, [INODE_TABLE + [SYSTEM_STATUS_TABLE+1] * 16 + 6 + index]);
-
-	    multipop(R0, R4, R5, R6);
 
       index = index + 1;
 
@@ -193,4 +204,6 @@ endif;
 //setting user stack
 SP = userSP;
 
+print "int9 end";
+breakpoint;
 ireturn;

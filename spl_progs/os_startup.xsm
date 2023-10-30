@@ -1,6 +1,3 @@
-MOV R16, "os_startup"
-PORT P1, R16
-OUT
 MOV R16, 54
 LOADI R16, 67
 MOV R16, 55
@@ -118,8 +115,5 @@ MOV [R16], R17
 MOV R16, 8
 MUL R16, 512
 MOV SP, R16
-MOV R16, "end os_startup"
-PORT P1, R16
-OUT
 IRET
 HALT

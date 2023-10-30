@@ -1,6 +1,12 @@
+MOV R16, "memory manager"
+PORT P1, R16
+OUT
 MOV R16, 2
 EQ R16, R1
 JZ R16, _L1
+MOV R16, "release page"
+PORT P1, R16
+OUT
 MOV R16, 29184
 ADD R16, R2
 MOV R17, 29184
@@ -50,6 +56,12 @@ ADD R16, 1
 MOV R0, R16
 JMP _L5
 _L6:
+MOV R16, "end memory manager"
+PORT P1, R16
+OUT
+MOV R16, "end release page"
+PORT P1, R16
+OUT
 RET
 JMP _L2
 _L1:
@@ -57,6 +69,9 @@ _L2:
 MOV R16, 1
 EQ R16, R1
 JZ R16, _L9
+MOV R16, "get free page"
+PORT P1, R16
+OUT
 MOV R16, 29560
 ADD R16, 3
 MOV R17, 29560
@@ -119,6 +134,12 @@ ADD R16, 1
 MOV R0, R16
 JMP _L13
 _L14:
+MOV R16, "end get free page"
+PORT P1, R16
+OUT
+MOV R16, "end memory manager"
+PORT P1, R16
+OUT
 RET
 JMP _L10
 _L9:

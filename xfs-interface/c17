@@ -46,8 +46,11 @@ cd ../expl
 echo compile idle
 ./expl samples/idle.expl
 
-echo compile gcd
-./expl ../stage_17/gcd.expl
+echo compile odd
+./expl ../stage_17/odd.expl
+
+echo compile exec
+./expl ../stage_17/exec.expl
 
 echo in xfs-interface
 cd ../xfs-interface

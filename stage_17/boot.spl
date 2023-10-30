@@ -32,6 +32,10 @@ endwhile;
 
 //Required interrupt routines, library, exeption handler, init
 
+// inode table
+loadi(59,3);
+loadi(60,4);
+
 //timer interrupt routine
 loadi(4,17);
 loadi(5,18);
