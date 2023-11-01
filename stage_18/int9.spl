@@ -1,0 +1,126 @@
+//code : system call interrupt handler of exec system call
+
+// CONSTANTS
+// MAX_FILE_NUM : max no of files allowed in inode table.  
+// MAX_MEM_PAGE : max no of memPage available to expos.  
+
+// ------------------------------------------------------------------------------------------------------------------------------------------
+
+// Save user stack value for later use, set up the kernel stack, set MODE flag to syscall no of exec 
+alias userSP R0;
+userSP = SP;
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 13] = SP;
+SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 11]*512 - 1;
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 9;
+
+// get the fileName. Search for fileName in memCopy of inode table. iReturn with retVal -1 if file is not present or file is not in XEXE format.  
+alias fileName R4; 
+fileName=[[PTBR + 2 * ((userSP - 4) / 512)] * 512 + ((userSP - 4) % 512)]; 
+alias fileNum R5;
+fileNum = 0;
+while(fileNum < MAX_FILE_NUM) do
+  if(fileName == [INODE_TABLE + fileNum * 16 + 1]) then
+    break;
+  endif;
+  fileNum = fileNum + 1;
+endwhile;
+
+if (fileNum == MAX_FILE_NUM) then
+     	[[PTBR + 2 * (userSP - 1)/ 512] * 512 + (userSP - 1) % 512] = -1;
+      SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 13];
+      ireturn;
+
+// ------------------------------------------------------------------------------------------------------------------------------------------
+
+// save inode index of the file into a register for future use. 
+alias inodeIndex R5;
+  
+multipush(R0, R4, R5); 
+R1 = EXIT_PROCESS;
+R2 = [SYSTEM_STATUS_TABLE+1];
+call PROCESS_MANAGER;
+multipop(R0, R4, R5); 
+
+// ------------------------------------------------------------------------------------------------------------------------------------------
+
+// Reclaim user area page used by curr process by (a)incrementing the mem free list entry of UsrAreaPg and (b)decrementing the MEM_FREE_COUNT field in the system status table. 
+// Set the SP to the start of the user area page to intialize the kernel stack of the new process(New process uses the PID of the terminated process). 
+// Update the STATE field to RUNNING and store inode index obtained above in the inode index field in the process table.
+
+alias UAPN R4;
+UAPN = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1] * 16 + 11];
+[MEMORY_FREE_LIST + UAPN] = [MEMORY_FREE_LIST + UAPN] + 1;
+[SYSTEM_STATUS_TABLE+2] = [SYSTEM_STATUS_TABLE+2] - 1;
+
+SP = UAPN*512 - 1;
+
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 4] = RUNNING;
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 7] = inodeIndex;
+
+// Set lib pages; allocate new pages for heap(2 page), stack(2 page), code; load code from disk to new pages got for code; set the page table entries for the new process.
+
+// library : 
+[PTBR+0] = 63;
+[PTBR+1] = "0100";
+[PTBR+2] = 64;
+[PTBR+3] = "0100";
+
+multipush(R0, R4, R5); 
+R1 = GET_FREE_PAGE;
+call MEMORY_MANAGER;
+[PTBR+4] = R3;
+[PTBR+5] = "0110";
+call MEMORY_MANAGER;
+[PTBR+6] = R3;
+[PTBR+7] = "0110";
+call MEMORY_MANAGER;
+[PTBR+16] = R3;
+[PTBR+17] = "0110";
+call MEMORY_MANAGER;
+[PTBR+18] = R3;
+[PTBR+19] = "0110";
+multipop(R0, R4, R5);
+
+//Code : initialising page table
+[PTBR+8] = -1;
+[PTBR+9] = "0000";
+[PTBR+10] = -1;
+[PTBR+11] = "0000";
+[PTBR+12] = -1;
+[PTBR+13] = "0000";
+[PTBR+14] = -1;
+[PTBR+15] = "0000";
+
+alias noOfBlocks R7;
+noOfBlocks = [INODE_TABLE + inodeIndex * 16 + 2]/512+1;
+alias index R6;
+index = 0;
+while(index < 4 && index < noOfBlocks) do
+
+  multipush(R0, R4, R5, R6, R7); 
+	R1 = GET_FREE_PAGE;
+  call MEMORY_MANAGER;
+
+  // invoke disk load. 
+  // R3 is page number which is return value from get free page. 
+  R1 = DISK_LOAD;
+  R2 = [SYSTEM_STATUS_TABLE + 1];
+  R3 = R3;
+  R4 = [INODE_TABLE + inodeIndex * 16 + 8 + index];
+  call DEVICE_MANAGER;
+  multipop(R0, R4, R5, R6, R7);
+
+  [PTBR+ 8 + 2*index ] = R3;
+  [PTBR+ 9 + 2*index ] = "0110";
+
+  index = index + 1;
+endwhile;
+
+// store entry point IP value on top of user stack, set mode flag back in pt and set SP to user stack. 
+[[PTBR+16] * 512] = [[PTBR+8] * 512 + 1];
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+SP = 8*512;
+
+print "end int9";
+breakpoint;
+ireturn;

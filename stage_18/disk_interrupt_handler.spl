@@ -1,0 +1,19 @@
+// code : disk interrupt handler
+
+// switch to kernel stack and backup the register context
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 13] = SP;
+SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 11]*512 - 1;
+backup;
+
+[DISK_STATUS_TABLE] = 0;
+
+alias PID R0;
+while (PID < 16) do
+  if([PROCESS_TABLE + PID * 16 + 4] == WAIT_DISK) then
+    [PROCESS_TABLE + PID * 16 + 4] = READY;
+  endif;
+endwhile;
+
+restore;
+SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 13];
+ireturn;

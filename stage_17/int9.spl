@@ -67,6 +67,7 @@ if (fileNum == MAX_FILE_NUM) then
      	//store -1 to return.
      	[[PTBR + 2 * (userSP - 1)/ 512] * 512 + (userSP - 1) % 512] = -1;
       SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 13];
+      [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
       ireturn;
 else
 
@@ -75,16 +76,12 @@ else
 
   // call exit process. 
   
-	// push all registers used till now in this interrupt in kernel stack
 	multipush(R0, R4, R5); 
 	
-	// R1 : function number of exit process
-  // R2 : PID of the current process. 
-  // R3 : return value (nothing here)
+	// R1 : function number of exit process, R2 : PID of the current process, R3 : return value (nothing here)
 	R1 = EXIT_PROCESS;
 	R2 = [SYSTEM_STATUS_TABLE+1];
 	
-	//call module 1
 	call PROCESS_MANAGER;
 
 	multipop(R0, R4, R5); 
@@ -108,9 +105,6 @@ else
 
   // Allocate new pages and set the page table entries for the new process.
   // 1. set the library page entries in the page table. 
-
-  // PTBR = PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE] * 10;
-  // PTLR = 10;
 
   // library : 
   [PTBR+0] = 63;
@@ -172,10 +166,10 @@ else
   [PTBR+15] = "0000";
 
   alias noOfBlocks R7;
-  noOfBlocks = [INODE_TABLE + inodeIndex * 16 + 2]/512;
+  noOfBlocks = [INODE_TABLE + inodeIndex * 16 + 2]/512 + 1;
   alias index R6;
   index = 0;
-  while(index < 4 && index <= noOfBlocks) do
+  while(index < 4 && index < noOfBlocks) do
 // while(index < 4 && index <= ([INODE_TABLE + ])) do
     // if([INODE_TABLE + inodeIndex * 16 + 8 + index] != -1) then
 

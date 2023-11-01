@@ -1,0 +1,58 @@
+cd ../spl
+echo in spl
+
+echo compile timer interrupt handler
+./spl ../stage_17/timer_interrupt_handler.spl
+
+echo compile console interrupt handler
+./spl ../stage_17/console_interrupt_handler.spl
+
+echo compile haltprog 
+./spl ../stage_17/haltprog.spl
+
+echo compile os_startup
+./spl ../spl_progs/os_startup.spl
+
+echo compile scheduler
+./spl ../stage_17/scheduler.spl
+
+echo compile int6
+./spl ../stage_17/int6.spl
+
+echo compile int7
+./spl ../stage_17/int7.spl
+
+echo compile int9
+./spl ../stage_17/int9.spl
+
+echo compile boot module
+./spl ../stage_17/boot.spl
+
+echo compile resource manager module
+./spl ../stage_17/resource_manager_module.spl
+
+echo compile process manager module
+./spl ../stage_17/process_manager_module.spl
+
+echo compile memory manager module
+./spl ../stage_17/memory_manager_module.spl
+
+echo compile device manager module
+./spl ../stage_17/device_manager_module.spl
+
+echo in expl
+cd ../expl
+
+echo compile idle
+./expl samples/idle.expl
+
+echo compile odd
+./expl ../stage_17/odd.expl
+
+echo compile exec
+./expl ../stage_17/exec.expl
+
+echo in xfs-interface
+cd ../xfs-interface
+
+./xfs-interface
