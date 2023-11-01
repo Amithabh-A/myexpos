@@ -1,5 +1,4 @@
 //This is process manager module
-print "memory manager";
 
 // CONSTANTS
 // GET_FREE_PAGE = 1
@@ -24,14 +23,15 @@ alias argument R2;
 //          
 
 if(R1 == RELEASE_PAGE) then
-  print "release page";
   alias pageNum R2;
   
+  print "st release";
+  breakpoint;
   // the page number to be released is in R2, decrement the corresponding entry in memory free list. 
   [MEMORY_FREE_LIST + pageNum] = [MEMORY_FREE_LIST + pageNum] - 1;
 
   // if that entry in the memory free list becomes zero, then the page is free. So increment the MEM_FREE_COUNT in system status table. 
-  if([MEMORY_FREE_LIST + pageNum]) then 
+  if([MEMORY_FREE_LIST + pageNum] == 0) then 
     [SYSTEM_STATUS_TABLE + 2] = [SYSTEM_STATUS_TABLE + 2] + 1;
   endif;
 
@@ -46,14 +46,13 @@ if(R1 == RELEASE_PAGE) then
   endwhile;
 
   // return to the caller
-  print "end memory manager";
-  print "end release page";
+  print "release";
+  breakpoint;
   return;
 
 endif;
 
 if(R1 == GET_FREE_PAGE) then
-  print "get free page";
   // increment WAIT_MEM_COUNT in system status table. 
   [SYSTEM_STATUS_TABLE+3] = [SYSTEM_STATUS_TABLE+3] + 1;
 
@@ -85,8 +84,9 @@ if(R1 == GET_FREE_PAGE) then
   endwhile;
 
   // return to the caller
-  print "end get free page";
-  print "end memory manager";
+  R3 = R0;
+  print "get";
+  breakpoint;
   return;
   
 endif;

@@ -1,12 +1,6 @@
-MOV R16, "process manager"
-PORT P1, R16
-OUT
 MOV R16, 3
 EQ R16, R1
 JZ R16, _L1
-MOV R16, "exit process"
-PORT P1, R16
-OUT
 PUSH R1
 PUSH R2
 MOV R1, 4
@@ -27,12 +21,6 @@ MUL R17, 16
 ADD R16, R17
 ADD R16, 4
 MOV [R16], 4
-MOV R16, "end exit process"
-PORT P1, R16
-OUT
-MOV R16, "end process manager"
-PORT P1, R16
-OUT
 RET
 JMP _L2
 _L1:
@@ -40,15 +28,6 @@ _L2:
 MOV R16, 4
 EQ R16, R1
 JZ R16, _L3
-MOV R16, "free page table"
-PORT P1, R16
-OUT
-MOV R16, 29696
-MOV R17, R2
-MUL R17, 10
-ADD R16, R17
-MOV PTBR, R16
-MOV PTLR, 10
 MOV R16, PTBR
 ADD R16, 0
 MOV [R16], -1
@@ -99,12 +78,6 @@ ADD R16, 1
 MOV R0, R16
 JMP _L5
 _L6:
-MOV R16, "end free page table"
-PORT P1, R16
-OUT
-MOV R16, "end process manager"
-PORT P1, R16
-OUT
 RET
 JMP _L4
 _L3:
@@ -112,9 +85,6 @@ _L4:
 MOV R16, 2
 EQ R16, R1
 JZ R16, _L9
-MOV R16, "free user area page"
-PORT P1, R16
-OUT
 MOV R16, 28672
 MOV R17, R2
 MUL R17, 16
@@ -131,12 +101,6 @@ CALL 22528
 POP R2
 POP R1
 POP R0
-MOV R16, "end process manager"
-PORT P1, R16
-OUT
-MOV R16, "end free user area page"
-PORT P1, R16
-OUT
 RET
 JMP _L10
 _L9:

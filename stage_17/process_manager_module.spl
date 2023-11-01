@@ -1,5 +1,4 @@
 //This is process manager module
-print "process manager";
 
 // CONSTANTS
 // EXIT_PROCESS = 3
@@ -20,7 +19,6 @@ alias functionNum R1;
 alias argument R2;
 
 if(R1 == EXIT_PROCESS) then
-  print "exit process";
   // extract PID of the invoking process from the corresponding register
   alias PID R2;
   
@@ -59,18 +57,15 @@ if(R1 == EXIT_PROCESS) then
   // set state of the process as terminated and return to the caller. 
   [PROCESS_TABLE + PID * 16 + 4] = TERMINATED;
 
-  print "end exit process";
-  print "end process manager";
   return;
 
 endif;
 
 if(R1 == FREE_PAGE_TABLE) then
-  print "free page table";
   alias PID R2;
 
-  PTBR = PAGE_TABLE_BASE + PID * 10;
-  PTLR = 10;
+  // PTBR = PAGE_TABLE_BASE + PID * 10;
+  // PTLR = 10;
 
   // invalidate the page table entries for the library pages by setting page number as -1 and auxillary data as "0000" for each entry.  
   [PTBR+0] = -1;
@@ -106,14 +101,11 @@ if(R1 == FREE_PAGE_TABLE) then
   endwhile;
 
   // return to the caller. 
-  print "end free page table";
-  print "end process manager";
   return;
 
 endif;
 
 if(R1 == FREE_USER_AREA_PAGE) then 
-  print "free user area page";
   alias PID R2;
 
   // obtain user area page number from the process table entry corresponding to the PID given as argument. 
@@ -137,7 +129,5 @@ if(R1 == FREE_USER_AREA_PAGE) then
 	    multipop(R0, R1, R2);
 
       // return to the caller
-      print "end process manager";
-      print "end free user area page";
       return;
 endif;

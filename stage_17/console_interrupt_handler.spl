@@ -13,9 +13,7 @@ alias reqPID R0;
 reqPID = [TERMINAL_STATUS_TABLE+1];
 
 // the input entered in console is saved in port P0 by the xsm machine. Copy the value present in P0 into the input buffer field of the process table entry of process which acqured terminal. 
-breakpoint;
 [PROCESS_TABLE + reqPID * 16 + 8] = P0;
-breakpoint;
 
 // Next step : Release the terminal 
 

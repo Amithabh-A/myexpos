@@ -1,5 +1,4 @@
 //code : system call interrupt of exec system call
-print "int9";
 
 // CONSTANTS
 // MAX_FILE_NUM : eXpFS permits a maximum of MAX_FILE_NUM files in inode table.  
@@ -33,8 +32,6 @@ print "int9";
 // heder section contains the infoemation like size of the text and data segments in the file. (we can't check the information and all. )
 // can we chack whether the file have two sections? No actually. 
 
-//set MODE flag to system call number which is 7 for exec system call.
-[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16+9] = 7;
 
 // Save user stack value for later use, set up the kernel stack. 
 alias userSP R0;
@@ -60,7 +57,6 @@ fileName=[[PTBR + 2 * ((userSP - 4) / 512)] * 512 + ((userSP - 4) % 512)];
 alias fileNum R5;
 fileNum = 0;
 while(fileNum < MAX_FILE_NUM) do
-  print [INODE_TABLE + fileNum * 16 + 1];
   if(fileName == [INODE_TABLE + fileNum * 16 + 1]) then
     break;
   endif;
@@ -70,6 +66,8 @@ endwhile;
 if (fileNum == MAX_FILE_NUM) then
      	//store -1 to return.
      	[[PTBR + 2 * (userSP - 1)/ 512] * 512 + (userSP - 1) % 512] = -1;
+      SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 13];
+      ireturn;
 else
 
   // save inode index of the file into a register for future use. 
@@ -111,8 +109,8 @@ else
   // Allocate new pages and set the page table entries for the new process.
   // 1. set the library page entries in the page table. 
 
-  PTBR = PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE] * 10;
-  PTLR = 10;
+  // PTBR = PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE] * 10;
+  // PTLR = 10;
 
   // library : 
   [PTBR+0] = 63;
@@ -173,19 +171,31 @@ else
   [PTBR+14] = -1;
   [PTBR+15] = "0000";
 
+  alias noOfBlocks R7;
+  noOfBlocks = [INODE_TABLE + inodeIndex * 16 + 2]/512;
   alias index R6;
   index = 0;
-  while(index < 4) do
-    print "here";
-    if([INODE_TABLE + [SYSTEM_STATUS_TABLE+1] * 16 + 8 + index] != -1) then
+  while(index < 4 && index <= noOfBlocks) do
+// while(index < 4 && index <= ([INODE_TABLE + ])) do
+    // if([INODE_TABLE + inodeIndex * 16 + 8 + index] != -1) then
 
-      [PTBR+ 8 + 2*index ] = [INODE_TABLE + [SYSTEM_STATUS_TABLE+1] * 16 + 8 + index];
+      multipush(R0, R4, R5, R6, R7); 
+	
+  	  R1 = GET_FREE_PAGE;
+	
+	    call MEMORY_MANAGER;
+
+      multipop(R0, R4, R5, R6, R7);
+
+      loadi(R3, [INODE_TABLE + inodeIndex * 16 + 8 + index]);
+
+      [PTBR+ 8 + 2*index ] = R3;
       [PTBR+ 9 + 2*index ] = "0110";
 
       index = index + 1;
 
-    else break;
-    endif;
+    // else break;
+    // endif;
   endwhile;
 
   // load the code blocks from the disk to memory using loadi statement. 
@@ -202,8 +212,6 @@ endif;
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
 
 //setting user stack
-SP = userSP;
+SP = 8*512;
 
-print "int9 end";
-breakpoint;
 ireturn;

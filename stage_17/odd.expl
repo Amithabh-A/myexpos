@@ -2,6 +2,7 @@ int main()
 {
 decl
     int temp,num;
+    string fileName;
 enddecl
 begin
     num=1;
@@ -9,6 +10,8 @@ begin
          temp = exposcall ( "Write" , -2, num );
          num = num + 2;
     endwhile;
+    read(fileName);
+    temp = exposcall("Exec", fileName);
     return 0;
 end
 }
