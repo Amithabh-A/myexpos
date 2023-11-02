@@ -62,6 +62,5 @@ if(R1 == GET_FREE_PAGE) then
     counter = counter + 1;
   endwhile;
 
-  R3 = R0;
   return;
 endif;

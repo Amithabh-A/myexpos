@@ -7,6 +7,7 @@ breakpoint;
 SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 11]*512 - 1;
 backup;
 
+// setting status to free
 [DISK_STATUS_TABLE] = 0;
 
 alias PID R0;

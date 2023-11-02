@@ -11,6 +11,8 @@
 
 // IMPORTANT INFORMATION : Loading from the disk to the memory of the XSM machine can also be accomplished using loadi statement in SPL. 
 //                         But here, the machine will continue execution of the next instruction only after the block transfer is completed.
+  
+// NOTE : Disk status table -> it just store status, page and block number in which diskio/diskwrite is happening. 
 
 // Doubt and clarification : 
 // It seems like there is no need for multipushing. When multipushing, we are saving R1, R2, R3 and R4. But, okay we are not returning... 
@@ -35,6 +37,7 @@ if(functionNum == DISK_LOAD) then
   R2 = PID;
   call RESOURCE_MANAGER;
   multipop(R1, R2, R3, R4);
+
 
   // set disk status table 
   // reset load/store bit, set pageNumber and blockNumber 

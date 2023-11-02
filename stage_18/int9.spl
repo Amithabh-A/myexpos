@@ -92,6 +92,8 @@ multipop(R0, R4, R5);
 [PTBR+14] = -1;
 [PTBR+15] = "0000";
 
+// instead of loadi, use disk load function. 
+
 alias noOfBlocks R7;
 noOfBlocks = [INODE_TABLE + inodeIndex * 16 + 2]/512+1;
 alias index R6;
@@ -106,7 +108,7 @@ while(index < 4 && index < noOfBlocks) do
   // R3 is page number which is return value from get free page. 
   R1 = DISK_LOAD;
   R2 = [SYSTEM_STATUS_TABLE + 1];
-  R3 = R3;
+  R3 = R0;
   R4 = [INODE_TABLE + inodeIndex * 16 + 8 + index];
   call DEVICE_MANAGER;
   multipop(R0, R4, R5, R6, R7);
@@ -122,4 +124,5 @@ endwhile;
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
 SP = 8*512;
 
+print "end int9";
 ireturn;

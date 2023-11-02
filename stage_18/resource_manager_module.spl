@@ -10,6 +10,8 @@ alias functionNum R1;
 alias currentPID R2;
 
 if(functionNum == ACQUIRE_DISK) then
+
+  // checking whether disk is free
   alias PID R2;
   while([DISK_STATUS_TABLE] == 1) do
     [PROCESS_TABLE + PID * 16 + 4] = WAIT_DISK;
@@ -18,6 +20,7 @@ if(functionNum == ACQUIRE_DISK) then
     multipop(R1, R2);
   endwhile;
 
+  // a process will acquire disk by setting status to busy and setting pid entry to its pid. 
   [DISK_STATUS_TABLE] = 1;
   [DISK_STATUS_TABLE + 4] = PID;
 
