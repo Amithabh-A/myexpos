@@ -1,8 +1,9 @@
-//This is process manager module
+//This is memory manager module
 
 // CONSTANTS
 // GET_FREE_PAGE = 1
 // RELEASE_PAGE = 2
+// GET_CODE_PAGE = 5
 // MEMORY_FREE_LIST : points to starting address of memory copy of memory free list present in page 57 of the memory. 
 // MAX_MEM_PAGE = 128 : Total size of memory free list, num of memory pages available to os. 
 
@@ -10,32 +11,18 @@
 alias functionNum R1;
 alias argument R2;
 
-// NOTE : Release page function takes pageNum as argument. It decreases the value in the memory free list corr to pageNum. If value becomes 0, 
-//        increment the value of MEM_FREE_COUNT in system status table indicating that the page has become free for fresh allocation. 
-// NOTE : Memory free list ds used to track used and unused pages in memory. Each entry(one word size) corresponding to no of processes that 
-//        are sharing the page. 
-// NOTE : Get Free Page
-//        This function being called to get pages for new process. Returns pageNum of allocated page. 
-//        Procedure : 
-//          to find a free page, memory free list is being searched. If a free page is found, the entry of the page in MEMORY_FREE_LIST is 
-//          incremented and return pageNum. Else, state of process set to WAIT_MEM and calls scheduler to schedule next process. This process
-//          will be scheduled when memory becomes available. WAIT_MEM_COUNT in system status table stores no of process who needs free pages. 
-//          
-
 if(R1 == RELEASE_PAGE) then
   alias pageNum R2;
   
-  print "st release";
-  breakpoint;
-  // the page number to be released is in R2, decrement the corresponding entry in memory free list. 
-  [MEMORY_FREE_LIST + pageNum] = [MEMORY_FREE_LIST + pageNum] - 1;
+  // Decrement the entry of pageNum in memory free list. If that entry become 0, increment MEM_FREE_COUNT in system status table. 
 
-  // if that entry in the memory free list becomes zero, then the page is free. So increment the MEM_FREE_COUNT in system status table. 
+  [MEMORY_FREE_LIST + pageNum] = [MEMORY_FREE_LIST + pageNum] - 1;
   if([MEMORY_FREE_LIST + pageNum] == 0) then 
     [SYSTEM_STATUS_TABLE + 2] = [SYSTEM_STATUS_TABLE + 2] + 1;
   endif;
-
+  
   // update the STATUS to READY for all the processes (with valid PID) which have STATUS as WAIT_MEM. 
+
   alias counter R0;
   counter = 0;
   while(counter < 16 ) do
@@ -45,26 +32,19 @@ if(R1 == RELEASE_PAGE) then
     counter = counter + 1;
   endwhile;
 
-  // return to the caller
-  print "release";
-  breakpoint;
   return;
-
 endif;
 
 if(R1 == GET_FREE_PAGE) then
+
   // increment WAIT_MEM_COUNT in system status table. 
   [SYSTEM_STATUS_TABLE+3] = [SYSTEM_STATUS_TABLE+3] + 1;
 
   // while memory is full(MEM_FREE_COUNT = 0), do the following : 
+
   while([SYSTEM_STATUS_TABLE+2] == 0) do
-    // set state of invoked process as WAIT_MEM. pid is not an argument. But since the invoked process is the current process(I don't have 
-    // any contradictions), we can give [SYSTEM_STATUS_TABLE+1]
     [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1] * 16 + 4] = WAIT_MEM;
-
-    //schedule other processes
     call SCHEDULER;
-
   endwhile;
 
   // decrement WAIT_MEM_COUNT and MEM_FREE_COUNT in system status table. 
@@ -72,7 +52,6 @@ if(R1 == GET_FREE_PAGE) then
   [SYSTEM_STATUS_TABLE+2] = [SYSTEM_STATUS_TABLE+2] - 1;
 
   // find a free page using memory free list and set the corresponding entry as 1. 
-  // IMPORTANT : find free user page
   alias counter R0;
   counter = 0;
   while(counter <= MAX_MEM_PAGE) do
@@ -83,10 +62,6 @@ if(R1 == GET_FREE_PAGE) then
     counter = counter + 1;
   endwhile;
 
-  // return to the caller
   R3 = R0;
-  print "get";
-  breakpoint;
   return;
-  
 endif;

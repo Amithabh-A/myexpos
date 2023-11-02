@@ -9,7 +9,7 @@
 alias functionNum R1;
 alias currentPID R2;
 
-if(functionNum == ACQUIRE_DISK)
+if(functionNum == ACQUIRE_DISK) then
   alias PID R2;
   while([DISK_STATUS_TABLE] == 1) do
     [PROCESS_TABLE + PID * 16 + 4] = WAIT_DISK;
