@@ -1,4 +1,5 @@
 //This is memory manager module
+// print "memorymod";
 
 // Doubt : 
 // why is PID an argument to disk release function? 
@@ -59,11 +60,15 @@ if(R1 == GET_CODE_PAGE) then
   multipush(R1, R2, R3);
   R1 = GET_FREE_PAGE;
   call MEMORY_MANAGER;
-  R1 = DISK_LOAD;
-  multipush(R0);
-  call DEVICE_MANAGER;
-  multipop(R0);
   multipop(R1, R2, R3);
+  multipush(R0, R1, R2, R3);
+
+// debug
+  print "mem diskload";
+  
+  R1 = DISK_LOAD;
+  call DEVICE_MANAGER;
+  multipop(R0, R1, R2, R3);
 
   // return memory pageNum to which code block has been loaded. 
   return;
@@ -110,14 +115,14 @@ if(R1 == GET_FREE_PAGE) then
   [SYSTEM_STATUS_TABLE+2] = [SYSTEM_STATUS_TABLE+2] - 1;
 
   // find a free page using memory free list and set the corresponding entry as 1. 
-  alias counter R0;
-  counter = 0;
-  while(counter <= MAX_MEM_PAGE) do
-    if([MEMORY_FREE_LIST + counter] == 0) then
-      [MEMORY_FREE_LIST + counter] = 1;
+  alias freePage R0;
+  freePage = 0;
+  while(freePage <= MAX_MEM_PAGE) do
+    if([MEMORY_FREE_LIST + freePage] == 0) then
+      [MEMORY_FREE_LIST + freePage] = 1;
       break;
     endif;
-    counter = counter + 1;
+    freePage = freePage + 1;
   endwhile;
 
   return;

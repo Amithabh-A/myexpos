@@ -69,16 +69,19 @@ SP = UAPN*512 - 1;
 multipush(R0, R4, R5); 
 R1 = GET_FREE_PAGE;
 call MEMORY_MANAGER;
-[PTBR+4] = R3;
+[PTBR+4] = R0;
 [PTBR+5] = "0110";
+R1 = GET_FREE_PAGE;
 call MEMORY_MANAGER;
-[PTBR+6] = R3;
+[PTBR+6] = R0;
 [PTBR+7] = "0110";
+R1 = GET_FREE_PAGE;
 call MEMORY_MANAGER;
-[PTBR+16] = R3;
+[PTBR+16] = R0;
 [PTBR+17] = "0110";
+R1 = GET_FREE_PAGE;
 call MEMORY_MANAGER;
-[PTBR+18] = R3;
+[PTBR+18] = R0;
 [PTBR+19] = "0110";
 multipop(R0, R4, R5);
 
@@ -103,12 +106,15 @@ while(index < 4 && index < noOfBlocks) do
   multipush(R0, R4, R5, R6, R7); 
 	R1 = GET_FREE_PAGE;
   call MEMORY_MANAGER;
+  R8 = R0;
+  multipop(R0, R4, R5, R6, R7); 
 
+  multipush(R0, R4, R5, R6, R7); 
   // invoke disk load. 
   // R3 is page number which is return value from get free page. 
   R1 = DISK_LOAD;
   R2 = [SYSTEM_STATUS_TABLE + 1];
-  R3 = R0;
+  R3 = R8;
   R4 = [INODE_TABLE + inodeIndex * 16 + 8 + index];
   call DEVICE_MANAGER;
   multipop(R0, R4, R5, R6, R7);
@@ -124,5 +130,6 @@ endwhile;
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
 SP = 8*512;
 
-print "end int9";
+// print "end int9";
+breakpoint;
 ireturn;

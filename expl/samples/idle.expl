@@ -6,7 +6,7 @@ int main()
 	begin
 		while(1==1) do
 			a=-1;
-			//write(a);
+	//		write(a);
 		endwhile;
 		return 0;
 	end

@@ -1,4 +1,5 @@
 //This is process manager module
+// print "processmod";
 
 // CONSTANTS
 // EXIT_PROCESS = 3
@@ -27,6 +28,8 @@ if(R1 == EXIT_PROCESS) then
 	R1 = FREE_PAGE_TABLE;
 	R2 = PID;
 	call PROCESS_MANAGER;
+	multipop(R1, R2); 
+	multipush(R1, R2); 
 	R1 = FREE_USER_AREA_PAGE;
 	R2 = PID;
 	call PROCESS_MANAGER;

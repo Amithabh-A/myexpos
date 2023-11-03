@@ -1,4 +1,5 @@
 //This is Device manager module
+// print "devicemod";
 
 // CONSTANTS
 // DISK_LOAD = 2
@@ -45,6 +46,8 @@ if(functionNum == DISK_LOAD) then
   [DISK_STATUS_TABLE + 2] = pageNum;
   [DISK_STATUS_TABLE + 3] = blockNum;
 
+  // print "I am here";
+  // breakpoint;
   load(pageNum, blockNum);
 
   [PROCESS_TABLE + PID * 16 + 4] = WAIT_DISK;

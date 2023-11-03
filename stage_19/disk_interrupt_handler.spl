@@ -1,4 +1,5 @@
 // code : disk interrupt handler
+// print "dih";
 
 // switch to kernel stack and backup the register context
 [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 13] = SP;
