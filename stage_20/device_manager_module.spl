@@ -24,7 +24,6 @@ alias functionNum R1;
 alias currentPID R2;
 
 if(functionNum == DISK_LOAD) then
-  print "entrDiskload";
 
   // Arguments : PID of a process, pageNumber, blockNumber
   // returnValue : NIL
@@ -32,7 +31,6 @@ if(functionNum == DISK_LOAD) then
   alias PID R2;
   alias pageNum R3;
   alias blockNum R4;
-  print R4;
 
   // acquire disk
   multipush(R1, R2, R3, R4);
@@ -40,7 +38,6 @@ if(functionNum == DISK_LOAD) then
   R2 = PID;
   call RESOURCE_MANAGER;
   multipop(R1, R2, R3, R4);
-  print "endacqdisk";
 
 
   // set disk status table 
@@ -49,9 +46,8 @@ if(functionNum == DISK_LOAD) then
   [DISK_STATUS_TABLE + 2] = pageNum;
   [DISK_STATUS_TABLE + 3] = blockNum;
 
-  print "I am here";
+  // print "I am here";
   // breakpoint;
-  print blockNum;
   load(pageNum, blockNum);
 
   [PROCESS_TABLE + PID * 16 + 4] = WAIT_DISK;
