@@ -23,7 +23,6 @@ if(functionNum == RELEASE_BLOCK) then
   alias blockNum R2;
   alias PID R3;
   [DISK_FREE_LIST + blockNum] = [DISK_FREE_LIST + blockNum] - 1;
-  return;
 endif;
 
 if(R1 == GET_CODE_PAGE) then
