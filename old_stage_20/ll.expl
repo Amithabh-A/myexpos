@@ -19,8 +19,6 @@ int main()
 
   begin
     x = initialize();
-    write("after initialize");
-    breakpoint;
     
     head=null;
     read(length); 

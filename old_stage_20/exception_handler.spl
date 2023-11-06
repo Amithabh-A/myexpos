@@ -61,15 +61,13 @@ else
   
     // update pt for this code page : set pageNum to memPage obt from get code page 
     [PTBR + EPN * 2] = R0;
-    [PTBR + EPN * 2 + 1] = "0100";
+    [PTBR + EPN * 2 + 1] = "1100";
     multipop(R0);
   
   endif;
   
   // if page fault is due to a heap page 
   if(EPN == 2 ) then
-  print("ex heap");
-  breakpoint;
   
     // we are allocating two memory pages for heap. i.e, There were no heap pages present. So we just need to check whether EPN == 2. 
   
@@ -79,13 +77,13 @@ else
     call MEMORY_MANAGER;
   
     [PTBR + 4] = R0;
-    [PTBR + 5] = "0110";
+    [PTBR + 5] = "1110";
   
     R1 = GET_FREE_PAGE;
     call MEMORY_MANAGER;
   
     [PTBR + 6] = R0;
-    [PTBR + 7] = "0110";
+    [PTBR + 7] = "1110";
   
     multipop(R0);
   
@@ -94,9 +92,9 @@ else
 endif;
 // reset MODE flag to 0. pop EIP from the stack and restore register context. 
 // do we need to store EIP popped? actually we didnt lose our EIP. Then why do we need to push it into the stack?  
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
 multipop(EIP);
 restore;
-[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
 
 // change to user stack, increment stack pointer, store the EIP value onto the location pointed by SP and return to the user mode. 
 // Why are we storing EIP? because, we have to execute EIP once again. So we are storing EIP on the top of the stack. 
@@ -108,7 +106,5 @@ SP = SP + 1;
 
 
 // now stack is userStack. We have to address translate SP to store EIP. 
-print("ended ex");
-breakpoint;
 [[PTBR + 2 * (SP/512)] * 512 + (SP % 512)] = EIP;
 ireturn;

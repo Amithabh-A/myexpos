@@ -1,0 +1,35 @@
+// code : Console/terminal interrupt handler
+
+// $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$         INFO : console interrupt handler will only save P0 in the input buffer and call release terminal function. $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+// change stack from user to kernel(using process table)
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 13] = SP;
+SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 11]*512 - 1;
+
+backup;
+
+// get PID of the process that acquired the terminal 
+alias reqPID R0;
+reqPID = [TERMINAL_STATUS_TABLE+1];
+
+// the input entered in console is saved in port P0 by the xsm machine. Copy the value present in P0 into the input buffer field of the process table entry of process which acqured terminal. 
+[PROCESS_TABLE + reqPID * 16 + 8] = P0;
+
+// Next step : Release the terminal 
+
+// push the registers used in this interrupt
+multipush(R0);
+
+// initialise R1 with function number for release terminal, R2 with reqPID 
+R1 = RELEASE_TERMINAL;
+R2 = [TERMINAL_STATUS_TABLE+1];
+
+call RESOURCE_MANAGER;
+
+multipop(R0);
+
+restore;
+
+SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 13];
+
+ireturn;

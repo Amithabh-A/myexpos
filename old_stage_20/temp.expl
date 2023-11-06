@@ -1,0 +1,65 @@
+
+decl
+    int A[100];
+    int temp,n,n1, i, j, swapped;
+enddecl
+int main()
+{
+begin
+	n =  0;
+	i = 0;
+	j = 0;
+	swapped = 0;
+	temp = exposcall ( "Read" , -1, n );
+	write("read");
+	n1 = 0;
+	while(n1 != n) do
+		write("ni");
+		write(n1);
+		temp = exposcall("Read", -1, A[n1]);
+		n1 = n1 + 1;
+	endwhile;
+
+	write("sorting");
+	i = 0;
+	while(i < (n-1)) do
+		write("First while");
+		swapped = 0;
+		j = 0;
+		while(j<(n-1-i)) do
+			write("j st");
+			write(j);
+			write(n-1-i);
+			write("second while");
+			if(A[j] > A[j+1]) then
+				temp = A[j];
+				A[j] = A[j+1];
+				A[j+1] = temp;
+				swapped = 1;
+			endif;
+			j = j + 1;
+			write(j);
+			write(n-1-i);
+			n1 = n-1-i;
+			if(n1 >= j) then
+				break;
+			endif;
+		endwhile;
+		write("second while end");
+		if(swapped == 0) then
+			break;
+		endif;
+		i = i + 1;
+	endwhile;
+	write("first while end");
+
+	n1 = 0;
+	write("print");
+        while(n1 != n) do
+                temp = exposcall("Write", -2, A[n1]);
+		n1 = n1+1;
+        endwhile;
+	write("end");
+	return 0;
+end
+}

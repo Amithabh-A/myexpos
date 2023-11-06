@@ -6,12 +6,65 @@ decl
 enddecl
 begin
     num=1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = num + 1;
+    num = 1;
     while ( num <= 100 ) do
          temp = exposcall ( "Write" , -2, num );
          num = num + 2;
     endwhile;
     read(fileName);
-    temp = exposcall("Exec", fileName);
+    breakpoint;
     return 0;
 end
 }
