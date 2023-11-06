@@ -27,8 +27,9 @@ if(functionNum == RELEASE_BLOCK) then
 endif;
 
 if(R1 == GET_CODE_PAGE) then
-  print ("inside");
+  print ("insidegcp");
   alias blockNum R2;
+  print "blockNum";
   print R2;
   alias pageNum R0;
 
@@ -41,13 +42,16 @@ if(R1 == GET_CODE_PAGE) then
     while(index <= 7 ) do
 
       // if blockNum matches with a code block number in disk map table and if its corr. page table entry is set to valid
-      if(blockNum == [DISK_MAP_TABLE + PID * 10 + index] && [PAGE_TABLE_BASE + PID * 10 * 2 + index * 2 + 1 ] == "1100" ) then
+      if(blockNum == [DISK_MAP_TABLE + PID * 10 + index] && [[PROCESS_TABLE + PID * 16 + 14] + index * 2 + 1 ] == "1100" ) then
       
+        // there is a memory page where disk block is loaded. It can be fetched using page table of process having pid PID.
+        pageNum = [[PROCESS_TABLE + PID * 16 + 14] + index * 2];
+        //code pages : 4,5,6,7
+
+
         // increment the share count of page in Mem free list. 
         [MEMORY_FREE_LIST + pageNum] = [MEMORY_FREE_LIST + pageNum] + 1;
 
-        // return physical pageNum. 
-        pageNum = [PAGE_TABLE_BASE + PID * 10 * 2 + index * 2 ];
         return;
       endif;
 
