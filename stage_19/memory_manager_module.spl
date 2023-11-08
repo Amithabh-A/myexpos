@@ -94,14 +94,12 @@ if(R1 == RELEASE_PAGE) then
   alias pageNum R2;
   
   // Decrement the entry of pageNum in memory free list. If that entry become 0, increment MEM_FREE_COUNT in system status table. 
-
   [MEMORY_FREE_LIST + pageNum] = [MEMORY_FREE_LIST + pageNum] - 1;
   if([MEMORY_FREE_LIST + pageNum] == 0) then 
     [SYSTEM_STATUS_TABLE + 2] = [SYSTEM_STATUS_TABLE + 2] + 1;
   endif;
   
   // update the STATUS to READY for all the processes (with valid PID) which have STATUS as WAIT_MEM. 
-
   alias counter R0;
   counter = 0;
   while(counter < 16 ) do

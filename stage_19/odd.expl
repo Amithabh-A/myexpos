@@ -63,7 +63,6 @@ begin
          temp = exposcall ( "Write" , -2, num );
          num = num + 2;
     endwhile;
-    read(fileName);
     breakpoint;
     return 0;
 end

@@ -79,13 +79,13 @@ else
     call MEMORY_MANAGER;
   
     [PTBR + 4] = R0;
-    [PTBR + 5] = "0110";
+    [PTBR + 5] = "1110";
   
     R1 = GET_FREE_PAGE;
     call MEMORY_MANAGER;
   
     [PTBR + 6] = R0;
-    [PTBR + 7] = "0110";
+    [PTBR + 7] = "1110";
   
     multipop(R0);
   
