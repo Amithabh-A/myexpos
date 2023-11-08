@@ -17,3 +17,8 @@
 * Each entry corr to a block in disk free list contains 0 (free) or 1 (used). 
 * OS startup code loads disk free list to memory and stored back when system halts or shut down. 
 * DISK FREE LIST points to starting addr. 
+
+## Differences
+
+# exec call(int9) 
+* he is storing PID in R7 in the beginning of the code

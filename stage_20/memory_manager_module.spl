@@ -23,11 +23,14 @@ if(functionNum == RELEASE_BLOCK) then
   alias blockNum R2;
   alias PID R3;
   [DISK_FREE_LIST + blockNum] = [DISK_FREE_LIST + blockNum] - 1;
+  return;
 endif;
 
 if(R1 == GET_CODE_PAGE) then
+  print ("insidegcp");
   alias blockNum R2;
-  alias reqPID R3;
+  print "blockNum";
+  print R2;
   alias pageNum R0;
 
   // if req code page is already loaded by some other processes, increment mem_free_list entry. 
@@ -39,13 +42,16 @@ if(R1 == GET_CODE_PAGE) then
     while(index <= 7 ) do
 
       // if blockNum matches with a code block number in disk map table and if its corr. page table entry is set to valid
-      if(blockNum == [DISK_MAP_TABLE + PID * 10 + index] && [PAGE_TABLE_BASE + PID * 10 * 2 + index * 2 + 1 ] == "1100" ) then
+      if(blockNum == [DISK_MAP_TABLE + PID * 10 + index] && [[PROCESS_TABLE + PID * 16 + 14] + index * 2 + 1 ] == "1100" ) then
       
+        // there is a memory page where disk block is loaded. It can be fetched using page table of process having pid PID.
+        pageNum = [[PROCESS_TABLE + PID * 16 + 14] + index * 2];
+        //code pages : 4,5,6,7
+
+
         // increment the share count of page in Mem free list. 
         [MEMORY_FREE_LIST + pageNum] = [MEMORY_FREE_LIST + pageNum] + 1;
 
-        // return physical pageNum. 
-        pageNum = [PAGE_TABLE_BASE + PID * 10 * 2 + index * 2 ];
         return;
       endif;
 
@@ -54,28 +60,33 @@ if(R1 == GET_CODE_PAGE) then
 
     PID = PID + 1;
   endwhile;
+  print ("whileover");
 
   // The code page is not in the memory, and has to be loaded from the disk. 
-  multipush(R1, R2, R3);
+  multipush(R1, R2);
   R1 = GET_FREE_PAGE;
   call MEMORY_MANAGER;
-  multipop(R1, R2, R3);
-  multipush(R0, R1, R2, R3);
+  multipop(R1, R2);
+  pageNum = R0;
+  print "hello";
+  print R2;
+  multipush(R0, R1, R2);
 
 // debug
   print "mem diskload";
   
   R1 = DISK_LOAD;
-  R7 = reqPID;
-  R8 = pageNum;
-  R9 = blockNum;
-  R2 = R7;
-  R3 = R8;
-  R4 = R9;
+  R4 = blockNum;
+  print "printing";
+  print blockNum;
+  R2 = [SYSTEM_STATUS_TABLE + 1];
+  R3 = pageNum;
   call DEVICE_MANAGER;
-  multipop(R0, R1, R2, R3);
+  multipop(R0, R1, R2);
 
   // return memory pageNum to which code block has been loaded. 
+  print "getcpend";
+  breakpoint;
   return;
 endif;
 
@@ -83,14 +94,12 @@ if(R1 == RELEASE_PAGE) then
   alias pageNum R2;
   
   // Decrement the entry of pageNum in memory free list. If that entry become 0, increment MEM_FREE_COUNT in system status table. 
-
   [MEMORY_FREE_LIST + pageNum] = [MEMORY_FREE_LIST + pageNum] - 1;
   if([MEMORY_FREE_LIST + pageNum] == 0) then 
     [SYSTEM_STATUS_TABLE + 2] = [SYSTEM_STATUS_TABLE + 2] + 1;
   endif;
   
   // update the STATUS to READY for all the processes (with valid PID) which have STATUS as WAIT_MEM. 
-
   alias counter R0;
   counter = 0;
   while(counter < 16 ) do

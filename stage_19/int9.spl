@@ -26,9 +26,10 @@ while(fileNum < MAX_FILE_NUM) do
 endwhile;
 
 if (fileNum == MAX_FILE_NUM) then
-     	[[PTBR + 2 * (userSP - 1)/ 512] * 512 + (userSP - 1) % 512] = -1;
-      SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 13];
-      ireturn;
+  [[PTBR + 2 * (userSP - 1)/ 512] * 512 + (userSP - 1) % 512] = -1;
+  SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 13];
+  [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+  ireturn;
 endif;
 
 // ------------------------------------------------------------------------------------------------------------------------------------------
@@ -47,13 +48,11 @@ multipop(R0, R4, R5);
 
 // ------------------------------------------------------------------------------------------------------------------------------------------
 
-// Manual reacquirement of same UAP by incrementing memFreeList and decrementing memFreeCount. 
-// Update the STATE field to RUNNING and store inode index obtained above in the inode index field in the process table.
-
+// manual reacquiring same user area page
 alias UAPN R4;
 UAPN = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1] * 16 + 11];
-[MEMORY_FREE_LIST + UAPN] = [MEMORY_FREE_LIST + UAPN] + 1;
-[SYSTEM_STATUS_TABLE+2] = [SYSTEM_STATUS_TABLE+2] - 1;
+[MEMORY_FREE_LIST + UAPN] = [MEMORY_FREE_LIST + UAPN] + 1; // incrementing memory free list entry
+[SYSTEM_STATUS_TABLE+2] = [SYSTEM_STATUS_TABLE+2] - 1; // decrementing memory free count
 
 // start fresh in new kernel stack. 
 SP = UAPN*512 - 1;

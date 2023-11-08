@@ -28,7 +28,7 @@ backup;
 multipush(EIP);
 
 // if exeption cause is not page fault or page fault occured bcz of userStack is full
-if(EC != 0 || userSP == PTLR*512 - 1) then
+if((EC != 0) || (userSP == PTLR*512 - 1)) then
   if(EC == 1) then
     print "illegalInstr";
   endif;
@@ -40,14 +40,16 @@ if(EC != 0 || userSP == PTLR*512 - 1) then
     print "ArithExep";
   endif;
 
+  multipush(R0);
   R1 = EXIT_PROCESS;
   R2 = [SYSTEM_STATUS_TABLE+1];
   call PROCESS_MANAGER;
+  multipop(R0);
 
   call SCHEDULER;
 else
 // if page fault is due to a code page 
-  if(EPN >=4 && EPN <= 7) then
+  if((EPN >=4) && (EPN <= 7)) then
   
     // get code block number to be loaded from disk map table(disk map table maps logical page to disk block for each process). 
     alias codeBlockNum R0;
@@ -61,15 +63,15 @@ else
   
     // update pt for this code page : set pageNum to memPage obt from get code page 
     [PTBR + EPN * 2] = R0;
-    [PTBR + EPN * 2 + 1] = "0100";
+    [PTBR + EPN * 2 + 1] = "1100";
     multipop(R0);
   
   endif;
   
   // if page fault is due to a heap page 
   if(EPN == 2 ) then
-  print("ex heap");
-  breakpoint;
+    print("ex heap");
+    breakpoint;
   
     // we are allocating two memory pages for heap. i.e, There were no heap pages present. So we just need to check whether EPN == 2. 
   
@@ -91,24 +93,26 @@ else
   
   endif;
 
+  // reset MODE flag to 0. pop EIP from the stack and restore register context. 
+  // do we need to store EIP popped? actually we didnt lose our EIP. Then why do we need to push it into the stack?  
+  multipop(EIP);
+  restore;
+  [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+
+  // change to user stack, increment stack pointer, store the EIP value onto the location pointed by SP and return to the user mode. 
+  // Why are we storing EIP? because, we have to execute EIP once again. So we are storing EIP on the top of the stack. 
+
+  // what happens when hardware interrupt occurs? 
+
+  SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 13];
+  SP = SP + 1;
+
+
+  // now stack is userStack. We have to address translate SP to store EIP. 
+  print("ended ex");
+  breakpoint;
+  [[PTBR + 2 * (SP/512)] * 512 + (SP % 512)] = EIP;
+  ireturn;
+
 endif;
-// reset MODE flag to 0. pop EIP from the stack and restore register context. 
-// do we need to store EIP popped? actually we didnt lose our EIP. Then why do we need to push it into the stack?  
-multipop(EIP);
-restore;
-[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
 
-// change to user stack, increment stack pointer, store the EIP value onto the location pointed by SP and return to the user mode. 
-// Why are we storing EIP? because, we have to execute EIP once again. So we are storing EIP on the top of the stack. 
-
-// what happens when hardware interrupt occurs? 
-
-SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 13];
-SP = SP + 1;
-
-
-// now stack is userStack. We have to address translate SP to store EIP. 
-print("ended ex");
-breakpoint;
-[[PTBR + 2 * (SP/512)] * 512 + (SP % 512)] = EIP;
-ireturn;

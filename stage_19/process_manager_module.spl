@@ -6,6 +6,7 @@
 // FREE_USER_AREA_PAGE = 2
 // RELEASE_PAGE = 2
 // MEMORY_MANAGER = MOD_2 = 22528
+// PAGE_TABLE_BASE = 29696
 
 
 // NOTE : Exit process : to deallocate the pages and to terminate the invoking process, also releases the user area page of the process. 
@@ -41,43 +42,50 @@ endif;
 
 if(R1 == FREE_PAGE_TABLE) then
 
-  // invalidate pt entries for library pages.   
-  [PTBR+0] = -1;
-  [PTBR+1] = "0000";
-  [PTBR+2] = -1;
-  [PTBR+3] = "0000";
+  alias page_table R3;
+  page_table = PAGE_TABLE_BASE + PID * 20;
+
+  // invalidate pt entries corr to shared library pages.   
+  [page_table+0] = -1;
+  [page_table+1] = "0000";
+  [page_table+2] = -1;
+  [page_table+3] = "0000";
 
   // Release the page for each valid page table entry in pt by invoking the release page function.  
   // index -> ith page table entry. 
-  alias index R3;
-  index = 2;
+
+  // loop through other page table entries. 
+  alias index R4;
+  index = 0;
   while(index < 10) do
 
     // go through heap and stack entries in disk map table. if any valid entries are found, invoke release block function. 
       // go through heap and stack entries in the disk map table of the process with given PID. If any valid entries are found, invoke the
       // Release Block function in memory manager module. 
+
+    // if entry is valid, free corresponding page by invoking free page table function 
+    if([page_table + index*2] != -1) then
+      [page_table + index*2] = -1;
+      [page_table + index*2 + 1] = "0000";
+	    // R1 : function number of release page, R2 : Page Number, R3 : return value (nothing here)
+	    multipush(R0, R1, R2, R3, R4); 
+      R1 = RELEASE_PAGE;
+  	  R2 = [page_table + index*2];
+  	  call MEMORY_MANAGER;
+      multipop(R0, R1, R2, R3, R4); 
+    endif;
+
     if(index == 2 || index == 3 || index == 8 || index == 9) then
       if([DISK_MAP_TABLE + PID * 10 + index] != -1) then
-        multipush(R1, R2, R3);
+        multipush(R0, R1, R2, R3, R4);
         R1 = RELEASE_BLOCK;
         R2 = [DISK_MAP_TABLE + PID * 10 + index];
         R3 = PID;
         call MEMORY_MANAGER;
-        multipop(R1, R2, R3);
+        multipop(R0, R1, R2, R3, R4);
       endif;
 
     endif;
-
-    if([PTBR + index*2] != -1) then
-      [PTBR + index*2 + 1] = "0000";
-	    // R1 : function number of release page, R2 : Page Number, R3 : return value (nothing here)
-	    multipush(R0, R1, R2); 
-      R1 = RELEASE_PAGE;
-  	  R2 = [PTBR + index*2];
-  	  call MEMORY_MANAGER;
-      multipop(R0, R1, R2); 
-    endif;
-
     // invalidate all entries of the disk map table. 
     [DISK_MAP_TABLE + PID * 10 + index] = -1;
 

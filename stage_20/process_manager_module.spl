@@ -1,5 +1,4 @@
-//This is process manager module
-// print "processmod";
+//This is process manager module print "processmod";
 
 // CONSTANTS
 // EXIT_PROCESS = 3
@@ -55,6 +54,8 @@ if(R1 == FREE_PAGE_TABLE) then
   while(index < 10) do
 
     // go through heap and stack entries in disk map table. if any valid entries are found, invoke release block function. 
+      // go through heap and stack entries in the disk map table of the process with given PID. If any valid entries are found, invoke the
+      // Release Block function in memory manager module. 
     if(index == 2 || index == 3 || index == 8 || index == 9) then
       if([DISK_MAP_TABLE + PID * 10 + index] != -1) then
         multipush(R1, R2, R3);
@@ -64,26 +65,22 @@ if(R1 == FREE_PAGE_TABLE) then
         call MEMORY_MANAGER;
         multipop(R1, R2, R3);
       endif;
+
     endif;
 
-    // invalidate all entries of the disk map table. 
-    [DISK_MAP_TABLE + PID * 10 + index] = -1;
-
     if([PTBR + index*2] != -1) then
-
       [PTBR + index*2 + 1] = "0000";
-
-      
-    
 	    // R1 : function number of release page, R2 : Page Number, R3 : return value (nothing here)
-
 	    multipush(R0, R1, R2); 
       R1 = RELEASE_PAGE;
   	  R2 = [PTBR + index*2];
   	  call MEMORY_MANAGER;
       multipop(R0, R1, R2); 
-
     endif;
+
+    // invalidate all entries of the disk map table. 
+    [DISK_MAP_TABLE + PID * 10 + index] = -1;
+
     index = index + 1;
   endwhile;
 

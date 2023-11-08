@@ -42,7 +42,7 @@ if(R1 == GET_CODE_PAGE) then
     while(index <= 7 ) do
 
       // if blockNum matches with a code block number in disk map table and if its corr. page table entry is set to valid
-      if(blockNum == [DISK_MAP_TABLE + PID * 10 + index] && [[PROCESS_TABLE + PID * 16 + 14] + index * 2 + 1 ] == "1100" ) then
+      if( (blockNum == [DISK_MAP_TABLE + PID * 10 + index]) && ([[PROCESS_TABLE + PID * 16 + 14] + index * 2 ] != -1) ) then
       
         // there is a memory page where disk block is loaded. It can be fetched using page table of process having pid PID.
         pageNum = [[PROCESS_TABLE + PID * 16 + 14] + index * 2];
