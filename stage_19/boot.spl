@@ -158,6 +158,17 @@ PTLR = 10;
 //transfer entry point value from header to top of the user stack of the init process
 [76*512] = [65*512+1];
 
+// initialize disk map table of the process. 
+[DISK_MAP_TABLE + 1 * 10 + 4 ] = 7; 
+[DISK_MAP_TABLE + 1 * 10 + 5 ] = 8; 
+alias dmt_index R0;
+dmt_index = 0;
+while(dmt_index < 10) do
+  if(dmt_index != 4 || dmt_index != 5) then
+    [DISK_MAP_TABLE + 1 * 10 + index ] = -1; 
+  endif;
+endwhile;
+
 // setting per process resource table. 
 alias base R0;
 alias bound R1;
