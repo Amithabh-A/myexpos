@@ -165,8 +165,9 @@ alias dmt_index R0;
 dmt_index = 0;
 while(dmt_index < 10) do
   if(dmt_index != 4 || dmt_index != 5) then
-    [DISK_MAP_TABLE + 1 * 10 + index ] = -1; 
+    [DISK_MAP_TABLE + 1 * 10 + dmt_index ] = -1; 
   endif;
+  dmt_index = dmt_index + 1;
 endwhile;
 
 // setting per process resource table. 

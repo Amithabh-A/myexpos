@@ -69,7 +69,7 @@ else
   endif;
   
   // if page fault is due to a heap page 
-  if(EPN == 2 ) then
+  if(EPN == 2 || EPN == 3 ) then
     print("ex heap");
     breakpoint;
   
@@ -116,3 +116,5 @@ else
 
 endif;
 
+
+halt;

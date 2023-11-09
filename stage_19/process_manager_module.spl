@@ -65,14 +65,14 @@ if(R1 == FREE_PAGE_TABLE) then
 
     // if entry is valid, free corresponding page by invoking free page table function 
     if([page_table + index*2] != -1) then
-      [page_table + index*2] = -1;
-      [page_table + index*2 + 1] = "0000";
 	    // R1 : function number of release page, R2 : Page Number, R3 : return value (nothing here)
 	    multipush(R0, R1, R2, R3, R4); 
       R1 = RELEASE_PAGE;
   	  R2 = [page_table + index*2];
   	  call MEMORY_MANAGER;
       multipop(R0, R1, R2, R3, R4); 
+      [page_table + index*2] = -1;
+      [page_table + index*2 + 1] = "0000";
     endif;
 
     if(index == 2 || index == 3 || index == 8 || index == 9) then
