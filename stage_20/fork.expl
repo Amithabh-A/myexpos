@@ -3,6 +3,7 @@ int main(){
         int temp,pID;
     enddecl
     begin
+        breakpoint;
         pID = exposcall("Fork");
         if(pID == -1) then
             temp = exposcall("Write",-2,"Fork fail");

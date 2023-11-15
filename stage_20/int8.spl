@@ -112,8 +112,8 @@ multipop(R1, R5, R6, R7, R8, R9, R10);
 alias count R11;
 count = 0;
 while(count < 8) do
-  [[child_process_table + 11] * 512 + 512 - 16 + count * 2] = [[parent_process_table + 11] * 512 + 512 - 16 + count * 2]
-  [[child_process_table + 11] * 512 + 512 - 16 + count * 2 + 1] = [[parent_process_table + 11] * 512 + 512 - 16 + count * 2 + 1]
+  [[child_process_table + 11] * 512 + 512 - 16 + count * 2] = [[parent_process_table + 11] * 512 + 512 - 16 + count * 2];
+  [[child_process_table + 11] * 512 + 512 - 16 + count * 2 + 1] = [[parent_process_table + 11] * 512 + 512 - 16 + count * 2 + 1];
   count = count + 1;
 endwhile;
 
