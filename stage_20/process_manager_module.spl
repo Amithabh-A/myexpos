@@ -18,6 +18,24 @@
 alias functionNum R1;
 alias PID R2;
 
+if(R1 == GET_PCB_ENTRY) then
+  alias pid R0;
+  pid = 0;
+  while(pid < 16) do
+    if([PROCESS_TABLE + pid*16 + 4] == TERMINATED) then
+      alias process_table R2;
+      process_table = PROCESS_TABLE + pid*16;
+      [process_table + 1] = pid;
+      [process_table + 4] = ALLOCATED;
+      [process_table + 14] = PAGE_TABLE_BASE + pid*20;
+      [process_table + 15] = 10;
+      return;
+    endif;
+  endwhile;
+  pid = -1;
+  return;
+endif;
+
 if(R1 == EXIT_PROCESS) then
   
   // invoke free page table function with same PID to deallocate pt entries, then invoke free user area page function with the same PID to free User Area Page. 
