@@ -62,4 +62,5 @@ PTLR = 10;
 [81 * 512] = [69*512 + 1];
 SP = 8*512;  
 
+print "retfrom OS";
 ireturn;

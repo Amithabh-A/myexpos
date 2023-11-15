@@ -1,27 +1,41 @@
 //code : system call interrupt handler of fork system call
 
-// CONSTANTS
-// GET_PCB_ENTRY = 1 -> in process manager module. 
-// MAX_FILE_NUM : max no of files allowed in inode table.  
-// MAX_MEM_PAGE : max no of memPage available to expos.  
-
 // ------------------------------------------------------------------------------------------------------------------------------------------
 
 // Save user stack value for later use, set up the kernel stack, set MODE flag to syscall no of fork
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 8;
-alias userSP R0;
+alias userSP R1;
 userSP = SP;
 [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 13] = SP;
 SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 11]*512 - 1;
 
-// allocate memory and set process table.  : What ?!
+// -------------  NECESSARY REGISTERS ---------------
 
-multipush(R0);
+alias parentPID R5;
+parentPID = [SYSTEM_STATUS_TABLE + 1];
+
+alias childPID R6;
+
+alias parent_page_table R7;
+parent_page_table = PTBR;
+
+alias child_page_table R8;
+
+alias parent_process_table R9;
+parent_process_table = PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16;
+
+alias child_process_table R10;
+
+// --------------------------------------------------
+
+// allocate memory and set process table.
+// process table entry for child process
+multipush(R1);
 R1 = GET_PCB_ENTRY;
 call PROCESS_MANAGER;
-alias childPID R5;
+multipop(R1);
+
 childPID = R0;
-multipop(R0);
 
 if (childPID == -1) then
      	[[PTBR + 2 * (userSP - 1)/ 512] * 512 + (userSP - 1) % 512] = -1;
@@ -30,162 +44,116 @@ if (childPID == -1) then
       ireturn;
 endif;
 
+child_page_table = PAGE_TABLE_BASE + childPID * 20;
+child_process_table = PROCESS_TABLE + childPID * 16;
 
 // The parent and child must share the heap. Hence if heap pages were not allocated for parent so far, allocate it now. 
-
-if([PTBR + 5] == "0000") then
-  multipush(R0, R5);
-  R1 = GET_FREE_PAGE;
-  call MEMORY_MANAGER;
-  
-  [PTBR + 4] = R0;
-  [PTBR + 5] = "1110";
-  
-  R1 = GET_FREE_PAGE;
-  call MEMORY_MANAGER;
-  
-  [PTBR + 6] = R0;
-  [PTBR + 7] = "1110";
-  
-  multipop(R0, R5);
+if([PTBR + 4] == -1) then
+	multipush(R1);
+	R1 = GET_FREE_PAGE;
+	call MEMORY_MANAGER;
+	multipop(R1);
+	[PTBR+4] = R0;
+	[PTBR+5] = "0110";
+	multipush(R1);
+	R1 = GET_FREE_PAGE;
+	call MEMORY_MANAGER;
+	multipop(R1);
+	[PTBR+6] = R0;
+	[PTBR+7] = "0110";
 endif;
 
+// two pages for user stack and one page for user area page of child process.
 
+multipush(R1, R5, R6, R7, R8, R9, R10);
+R1 = GET_FREE_PAGE;
+call MEMORY_MANAGER;
+multipop(R1, R5, R6, R7, R8, R9, R10);
+[child_page_table + 4] = R0;
+[child_page_table + 5] = "0110";
 
+multipush(R1, R5, R6, R7, R8, R9, R10);
+R1 = GET_FREE_PAGE;
+call MEMORY_MANAGER;
+multipop(R1, R5, R6, R7, R8, R9, R10);
+[child_page_table + 6] = R0;
+[child_page_table + 7] = "0110";
+[MEMORY_FREE_LIST + R0] = [MEMORY_FREE_LIST + R0] + 1;
 
+multipush(R1, R5, R6, R7, R8, R9, R10);
+R1 = GET_FREE_PAGE;
+call MEMORY_MANAGER;
+multipop(R1, R5, R6, R7, R8, R9, R10);
+[child_process_table + 11] = R0;
+[MEMORY_FREE_LIST + R0] = [MEMORY_FREE_LIST + R0] + 1;
 
+// copy parent's process table to child process table except TICK, PID, PPID, 
+// UAPN, Kernel stack pointer, Input buffer, PTBR, PTLR. 
+// dont copy 0, 1, 2, 8, 11, 12, 14, 15
 
+[child_process_table + 3] = [parent_process_table + 3];
+[child_process_table + 4] = [parent_process_table + 4];
+[child_process_table + 5] = [parent_process_table + 5];
+[child_process_table + 6] = [parent_process_table + 6];
+[child_process_table + 7] = [parent_process_table + 7];
+[child_process_table + 9] = [parent_process_table + 9];
+[child_process_table + 10] = [parent_process_table + 10];
+[child_process_table + 13] = [parent_process_table + 13];
 
+// ppid of child process
+[child_process_table + 2] = [parentPID];
 
+// mode, tick, kernel stack pointer to 0
+[child_process_table + 9] = 0;
+[child_process_table + 0] = 0;
+[child_process_table + 12] = 0;
 
-
-
-
-
-
-
-
-
-
-
-
-// save inode index of the file into a register for future use. 
-alias inodeIndex R5;
- 
-// DESTROY !!!
-
-// call exit process to deallocate resources of current process. : THIS IS DESTROYING GAME!
-multipush(R0, R4, R5); 
-R1 = EXIT_PROCESS;
-R2 = [SYSTEM_STATUS_TABLE+1];
-call PROCESS_MANAGER;
-multipop(R0, R4, R5); 
-
-// ------------------------------------------------------------------------------------------------------------------------------------------
-
-// Manual reacquirement of same UAP by incrementing memFreeList and decrementing memFreeCount. 
-// Update the STATE field to RUNNING and store inode index obtained above in the inode index field in the process table.
-
-alias UAPN R4;
-UAPN = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1] * 16 + 11];
-[MEMORY_FREE_LIST + UAPN] = [MEMORY_FREE_LIST + UAPN] + 1;
-[SYSTEM_STATUS_TABLE+2] = [SYSTEM_STATUS_TABLE+2] - 1;
-
-// start fresh in new kernel stack. 
-SP = UAPN*512 - 1;
-
-// initialize per process resource table by setting all entries to -1. alias base R0;
-alias base R6;
-alias bound R7;
-base = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE] * 16 + 11] * 512 + 496;
-bound = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE] * 16 + 11] * 512 + 512;
-alias index_init R8;
-index_init = base;
-while(index_init < bound) do
-  [index_init] = -1;
-  index_init = index_init + 2;
+// child per process resource table
+alias count R11;
+count = 0;
+while(count < 8) do
+  [[child_process_table + 11] * 512 + 512 - 16 + count * 2] = [[parent_process_table + 11] * 512 + 512 - 16 + count * 2]
+  [[child_process_table + 11] * 512 + 512 - 16 + count * 2 + 1] = [[parent_process_table + 11] * 512 + 512 - 16 + count * 2 + 1]
+  count = count + 1;
 endwhile;
 
-// in pt, set inodeIndex and set state to running. 
-[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 4] = RUNNING;
-[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 7] = inodeIndex;
+// child disk map table
+count = 0;
+while(count < 10) do
+  [DISK_MAP_TABLE + childPID * 10 + count] = [DISK_MAP_TABLE + parentPID * 10 + count];
+  count = count + 1;
+endwhile;
 
-print("bastackp");
-breakpoint;
-
-/// acquire two memory pages for stack by invoking get_free_page() from memory manager module. 
-multipush(R0, R4, R5); 
-R1 = GET_FREE_PAGE;
-call MEMORY_MANAGER;
-[PTBR+16] = R0;
-[PTBR+17] = "0110";
-R1 = GET_FREE_PAGE;
-call MEMORY_MANAGER;
-[PTBR+18] = R0;
-[PTBR+19] = "0110";
-multipop(R0, R4, R5);
-
-// obtain the disk block number of first code page from inode table entro of the file passed as argument. 
-// load first code page into the memory by invoking get_code_page() in mem man mod. 
-// set page table and disk map table entries of the process. 
-
-print("bgetcodepage");
-breakpoint;
-// HURRAY!!!
-multipush(R0, R4, R5);
-R1 = GET_CODE_PAGE;
-R2 = [INODE_TABLE + inodeIndex * 16 + 8];
-print "going to call";
-print R2;
-print ("MemCallAmI?");
-call MEMORY_MANAGER;
-R7 = R0;
-multipop(R0, R4, R5);
-
-print("initialize");
-breakpoint;
-// initializing page table. 
-[PTBR+0] = 63;
-[PTBR+1] = "0100";
-[PTBR+2] = 64;
-[PTBR+3] = "0100";
-[PTBR+4] = -1;
-[PTBR+5] = "0000";
-[PTBR+6] = -1;
-[PTBR+7] = "0000";
-[PTBR+8] = R7;
-print "cullpritPage";
-print R7;
-[PTBR+9] = "0100";
-[PTBR+10] = -1;
-[PTBR+11] = "0000";
-[PTBR+12] = -1;
-[PTBR+13] = "0000";
-[PTBR+14] = -1;
-[PTBR+15] = "0000";
-
-// Initialising disk map table. 
-// we have to set all as -1 except code pages. 
-alias index R7;
-index = 0;
-while(index < 10) do
-  if(index >= 4 && index <= 7) then
-    [DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1] * 10 + index] = [INODE_TABLE + inodeIndex * 16 + 8 + (index-4)];
-    print [INODE_TABLE + inodeIndex * 16 + 8 + (index-4)];
-    print [DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1] * 10 + index]; 
-  else 
-    [DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1] * 10 + index] = -1;
+// page table of child process. 
+count = 0;
+while(count < 7) do
+  [child_page_table + 2*count] = [parent_page_table + 2*count];
+  [child_page_table + 2*count + 1] = [parent_page_table + 2*count + 1];
+  if(count >= 2) then
+    [MEMORY_FREE_LIST + [parent_page_table + 2*count]] = [MEMORY_FREE_LIST + [parent_page_table + 2*count]] + 1; 
   endif;
-  index = index + 1;
 endwhile;
 
-// obtain entry point IP value from the header of new process and set it on top of user stack, set mode flag back in pt and set SP to user stack. 
-[[PTBR+16] * 512] = [[PTBR+8] * 512 + 1];
-[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
-// set SP to the logical address of the user stack. 
-SP = 8*512;
+// user stack of child
+count = 0;
+while(count < 512) do
+  [[child_page_table + 8]*512 + count] = [[parent_page_table + 8]*512 + count];
+  [[child_page_table + 9]*512 + count] = [[parent_page_table + 9]*512 + count];
+  count = count + 1;
+endwhile;
 
-print "end int9";
-breakpoint;
-// YOOOOOOOOOOOOOOOOOOOOOOOO! 
+// BP value in beginning of kernel stack -> so scheduler can restore it when child run. 
+[[child_process_table + 11]*512] = BP;
+
+// return value for parent
+[[PTBR + 2 * (userSP - 1)/ 512] * 512 + (userSP - 1) % 512] = childPID;
+
+// return value for child
+[[PAGE_TABLE_BASE + childPID*20 + 2 * ([child_process_table + 13] - 1)/ 512] * 512 + ([child_process_table + 13] - 1) % 512] = 0;
+
+// child process state
+[child_process_table + 4] = CREATED;
+
+[parent_process_table + 9] = 0;
+SP = userSP;
 ireturn;
