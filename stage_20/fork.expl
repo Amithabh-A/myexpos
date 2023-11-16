@@ -7,12 +7,16 @@ int main(){
         write("fork");
         pID = exposcall("Fork");
         if(pID == -1) then
-            temp = exposcall("Write",-2,"Fork fail");
-        endif;
-        if(pID == 0) then
-            temp = exposcall("Exec","odd.xsm");
+            // temp = exposcall("Write",-2,"Fork fail");
+            write("fail");
         else
-            temp = exposcall("Exec","even.xsm");
+            if(pID == 0) then
+                // temp = exposcall("Exec","odd.xsm");
+                write("child");
+            else
+                // temp = exposcall("Exec","even.xsm");
+                write("parent");
+            endif;
         endif;
         return 0;
     end
