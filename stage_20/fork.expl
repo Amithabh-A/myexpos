@@ -4,6 +4,7 @@ int main(){
     enddecl
     begin
         breakpoint;
+        write("fork");
         pID = exposcall("Fork");
         if(pID == -1) then
             temp = exposcall("Write",-2,"Fork fail");

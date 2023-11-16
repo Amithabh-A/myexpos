@@ -1,4 +1,5 @@
 //code : system call interrupt handler of fork system call
+print "startFork";
 
 // ------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -30,10 +31,10 @@ alias child_process_table R10;
 
 // allocate memory and set process table.
 // process table entry for child process
-multipush(R1);
+multipush(R1, R5, R6, R7, R8, R9, R10);
 R1 = GET_PCB_ENTRY;
 call PROCESS_MANAGER;
-multipop(R1);
+multipop(R1, R5, R6, R7, R8, R9, R10);
 
 childPID = R0;
 
@@ -49,16 +50,16 @@ child_process_table = PROCESS_TABLE + childPID * 16;
 
 // The parent and child must share the heap. Hence if heap pages were not allocated for parent so far, allocate it now. 
 if([PTBR + 4] == -1) then
-	multipush(R1);
+  multipush(R1, R5, R6, R7, R8, R9, R10);
 	R1 = GET_FREE_PAGE;
 	call MEMORY_MANAGER;
-	multipop(R1);
+  multipop(R1, R5, R6, R7, R8, R9, R10);
 	[PTBR+4] = R0;
 	[PTBR+5] = "0110";
-	multipush(R1);
+  multipush(R1, R5, R6, R7, R8, R9, R10);
 	R1 = GET_FREE_PAGE;
 	call MEMORY_MANAGER;
-	multipop(R1);
+  multipop(R1, R5, R6, R7, R8, R9, R10);
 	[PTBR+6] = R0;
 	[PTBR+7] = "0110";
 endif;
@@ -69,15 +70,15 @@ multipush(R1, R5, R6, R7, R8, R9, R10);
 R1 = GET_FREE_PAGE;
 call MEMORY_MANAGER;
 multipop(R1, R5, R6, R7, R8, R9, R10);
-[child_page_table + 4] = R0;
-[child_page_table + 5] = "0110";
+[child_page_table + 16] = R0;
+[child_page_table + 17] = "0110";
 
 multipush(R1, R5, R6, R7, R8, R9, R10);
 R1 = GET_FREE_PAGE;
 call MEMORY_MANAGER;
 multipop(R1, R5, R6, R7, R8, R9, R10);
-[child_page_table + 6] = R0;
-[child_page_table + 7] = "0110";
+[child_page_table + 18] = R0;
+[child_page_table + 19] = "0110";
 [MEMORY_FREE_LIST + R0] = [MEMORY_FREE_LIST + R0] + 1;
 
 multipush(R1, R5, R6, R7, R8, R9, R10);
@@ -101,13 +102,14 @@ multipop(R1, R5, R6, R7, R8, R9, R10);
 [child_process_table + 13] = [parent_process_table + 13];
 
 // ppid of child process
-[child_process_table + 2] = [parentPID];
+[child_process_table + 2] = parentPID;
 
 // mode, tick, kernel stack pointer to 0
 [child_process_table + 9] = 0;
 [child_process_table + 0] = 0;
 [child_process_table + 12] = 0;
 
+print "resTable";
 // child per process resource table
 alias count R11;
 count = 0;
@@ -129,7 +131,7 @@ count = 0;
 while(count < 7) do
   [child_page_table + 2*count] = [parent_page_table + 2*count];
   [child_page_table + 2*count + 1] = [parent_page_table + 2*count + 1];
-  if(count >= 2) then
+  if(count >= 2 && [child_page_table + 2*count] != -1) then
     [MEMORY_FREE_LIST + [parent_page_table + 2*count]] = [MEMORY_FREE_LIST + [parent_page_table + 2*count]] + 1; 
   endif;
 endwhile;
@@ -137,8 +139,8 @@ endwhile;
 // user stack of child
 count = 0;
 while(count < 512) do
-  [[child_page_table + 8]*512 + count] = [[parent_page_table + 8]*512 + count];
-  [[child_page_table + 9]*512 + count] = [[parent_page_table + 9]*512 + count];
+  [[child_page_table + 16]*512 + count] = [[parent_page_table + 16]*512 + count];
+  [[child_page_table + 18]*512 + count] = [[parent_page_table + 18]*512 + count];
   count = count + 1;
 endwhile;
 
@@ -156,4 +158,5 @@ endwhile;
 
 [parent_process_table + 9] = 0;
 SP = userSP;
+print "endfork";
 ireturn;
