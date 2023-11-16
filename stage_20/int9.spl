@@ -43,12 +43,14 @@ multipush(R1, R4, R5);
 R1 = EXIT_PROCESS;
 R2 = [SYSTEM_STATUS_TABLE+1];
 call PROCESS_MANAGER;
+print "after Exit";
 multipop(R1, R4, R5); 
 
 // ------------------------------------------------------------------------------------------------------------------------------------------
 
 // Manual reacquirement of same UAP by incrementing memFreeList and decrementing memFreeCount. 
 // Update the STATE field to RUNNING and store inode index obtained above in the inode index field in the process table.
+print "uapn";
 
 alias UAPN R4;
 UAPN = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1] * 16 + 11];
@@ -62,6 +64,7 @@ SP = UAPN*512 - 1;
 [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 4] = RUNNING;
 [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 7] = inodeIndex;
 
+print "pprt";
 // initialize per process resource table by setting all entries to -1. alias base R0;
 alias base R6;
 alias bound R7;
@@ -77,6 +80,7 @@ endwhile;
 
 breakpoint;
 
+print "stPgAcq";
 /// acquire two memory pages for stack by invoking get_free_page() from memory manager module. 
 multipush(R1, R4, R5); 
 R1 = GET_FREE_PAGE;
@@ -100,6 +104,7 @@ call MEMORY_MANAGER;
 R7 = R0;
 multipop(R1, R4, R5);
 
+print "ptInit";
 breakpoint;
 // initializing page table. 
 [PTBR+0] = 63;
@@ -119,6 +124,7 @@ breakpoint;
 [PTBR+14] = -1;
 [PTBR+15] = "0000";
 
+print "dmtInit";
 // Initialising disk map table. 
 // we have to set all as -1 except code pages. 
 alias index R7;

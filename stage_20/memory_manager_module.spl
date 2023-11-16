@@ -81,6 +81,7 @@ if(R1 == GET_CODE_PAGE) then
 endif;
 
 if(R1 == RELEASE_PAGE) then
+  print "relPage";
   alias pageNum R2;
   
   // Decrement the entry of pageNum in memory free list. If that entry become 0, increment MEM_FREE_COUNT in system status table. 
@@ -99,6 +100,7 @@ if(R1 == RELEASE_PAGE) then
     counter = counter + 1;
   endwhile;
 
+  print "retRelPage";
   return;
 endif;
 

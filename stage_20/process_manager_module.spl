@@ -20,6 +20,7 @@ alias functionNum R1;
 alias PID R2;
 
 if(R1 == GET_PCB_ENTRY) then
+  print "getpcb";
   alias pid R0;
   pid = 0;
   while(pid < 16) do
@@ -39,6 +40,7 @@ if(R1 == GET_PCB_ENTRY) then
 endif;
 
 if(R1 == EXIT_PROCESS) then
+  print "exit";
   
   // invoke free page table function with same PID to deallocate pt entries, then invoke free user area page function with the same PID to free User Area Page. 
 	// R1 : function number of free page table function, R2 : PID of the process, R3 : return value (nothing here)
@@ -60,6 +62,7 @@ if(R1 == EXIT_PROCESS) then
 endif;
 
 if(R1 == FREE_PAGE_TABLE) then
+  print "fpt";
   alias page_table R3;
   page_table = PAGE_TABLE_BASE + PID * 20 ;
 
@@ -111,6 +114,7 @@ if(R1 == FREE_PAGE_TABLE) then
 endif;
 
 if(R1 == FREE_USER_AREA_PAGE) then 
+  print "freeUAP";
 
   // obtain user area page number from the process table entry corresponding to the PID given as argument. Then free the user area page by invoking release page function.  
   alias UAPN R3;
