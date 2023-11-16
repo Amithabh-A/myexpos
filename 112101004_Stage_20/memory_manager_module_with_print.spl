@@ -27,7 +27,10 @@ if(functionNum == RELEASE_BLOCK) then
 endif;
 
 if(R1 == GET_CODE_PAGE) then
+  print ("insidegcp");
   alias blockNum R2;
+  print "blockNum";
+  print R2;
   alias pageNum R0;
 
   // if req code page is already loaded by some other processes, increment mem_free_list entry. 
@@ -57,6 +60,7 @@ if(R1 == GET_CODE_PAGE) then
 
     PID = PID + 1;
   endwhile;
+  print ("whileover");
 
   // The code page is not in the memory, and has to be loaded from the disk. 
   multipush(R1, R2);
@@ -64,18 +68,24 @@ if(R1 == GET_CODE_PAGE) then
   call MEMORY_MANAGER;
   multipop(R1, R2);
   pageNum = R0;
+  print "hello";
+  print R2;
   multipush(R0, R1, R2);
 
 // debug
+  print "mem diskload";
   
   R1 = DISK_LOAD;
   R4 = blockNum;
+  print "printing";
+  print blockNum;
   R2 = [SYSTEM_STATUS_TABLE + 1];
   R3 = pageNum;
   call DEVICE_MANAGER;
   multipop(R0, R1, R2);
 
   // return memory pageNum to which code block has been loaded. 
+  print "getcpend";
   breakpoint;
   return;
 endif;
