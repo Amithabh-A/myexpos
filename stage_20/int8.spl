@@ -109,7 +109,6 @@ multipop(R1, R5, R6, R7, R8, R9, R10);
 [child_process_table + 0] = 0;
 [child_process_table + 12] = 0;
 
-print "resTable";
 // child per process resource table
 alias count R11;
 count = 0;
@@ -134,6 +133,7 @@ while(count < 7) do
   if(count >= 2 && [child_page_table + 2*count] != -1) then
     [MEMORY_FREE_LIST + [parent_page_table + 2*count]] = [MEMORY_FREE_LIST + [parent_page_table + 2*count]] + 1; 
   endif;
+  count = count + 1;
 endwhile;
 
 // user stack of child

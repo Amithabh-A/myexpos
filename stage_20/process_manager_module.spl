@@ -31,6 +31,7 @@ if(R1 == GET_PCB_ENTRY) then
       [process_table + 15] = 10;
       return;
     endif;
+    pid = pid + 1;
   endwhile;
   pid = -1;
   return;
