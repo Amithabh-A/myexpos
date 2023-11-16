@@ -14,7 +14,7 @@ echo compile haltprog
 ./spl ../stage_20/haltprog.spl
 
 echo compile os_startup
-./spl ../spl_progs/os_startup.spl
+./spl ../stage_20/os_startup.spl
 
 echo compile scheduler
 ./spl ../stage_20/scheduler.spl
@@ -56,7 +56,7 @@ echo in expl
 cd ../expl
 
 echo compile idle
-./expl samples/idle.expl
+./expl ../stage_20/idle.expl
 
 echo compile odd
 ./expl ../stage_20/odd.expl
