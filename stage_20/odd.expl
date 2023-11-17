@@ -1,16 +1,19 @@
-int main()
-{
+int main(){
 decl
-    int temp,num;
-    string fileName;
+	int temp, num;
 enddecl
 begin
-    num=1;
-    while ( num <= 100 ) do
-         temp = exposcall ( "Write" , -2, num );
-         num = num + 2;
-    endwhile;
-    breakpoint;
-    return 0;
+	num = 1;
+	while(num <= 100) do 
+		if((num % 2) == 1) then
+			temp = exposcall("Write", -2, num);
+		endif;
+		num = num + 1;
+	endwhile;
+	return 0;
+
+
 end
+
+
 }
