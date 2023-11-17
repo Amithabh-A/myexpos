@@ -30,6 +30,7 @@ PTBR = [PROCESS_TABLE + newPID * 16 + 14];
 [SYSTEM_STATUS_TABLE+1] = newPID;
 
 if([PROCESS_TABLE + newPID * 16 + 4] == CREATED) then 
+  BP = [[PROCESS_TABLE + newPID*16 + 11]*512];
   SP = [PROCESS_TABLE + newPID * 16 + 13];
   [PROCESS_TABLE + newPID * 16 + 4] = RUNNING;
  [PROCESS_TABLE + newPID * 16 + 9] = 0;

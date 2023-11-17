@@ -1,4 +1,4 @@
-//This is process manager module print "processmod";
+//This is process manager module 
 
 // CONSTANTS
 // EXIT_PROCESS = 3
@@ -6,7 +6,6 @@
 // FREE_USER_AREA_PAGE = 2
 // RELEASE_PAGE = 2
 // MEMORY_MANAGER = MOD_2 = 22528
-// PAGE_TABLE_BASE = 29696
 
 
 // NOTE : Exit process : to deallocate the pages and to terminate the invoking process, also releases the user area page of the process. 
@@ -19,30 +18,51 @@
 alias functionNum R1;
 alias PID R2;
 
+if(R1 == GET_PCB_ENTRY) then
+  alias pid R0;
+  pid = 0;
+  while(pid < 16) do
+    if([PROCESS_TABLE + pid*16 + 4] == TERMINATED) then
+      alias process_table R2;
+      process_table = PROCESS_TABLE + pid*16;
+      [process_table + 1] = pid;
+      [process_table + 4] = ALLOCATED;
+      [process_table + 14] = PAGE_TABLE_BASE + pid*20;
+      [process_table + 15] = 10;
+      return;
+    endif;
+    pid = pid + 1;
+  endwhile;
+  pid = -1;
+  return;
+endif;
+
 if(R1 == EXIT_PROCESS) then
   
+  // invoke free page table function with same PID to deallocate pt entries, then invoke free user area page function with the same PID to free User Area Page. 
+	// R1 : function number of free page table function, R2 : PID of the process, R3 : return value (nothing here)
+
 	multipush(R1, R2); 
 	R1 = FREE_PAGE_TABLE;
 	R2 = PID;
 	call PROCESS_MANAGER;
 	multipop(R1, R2); 
-
 	multipush(R1, R2); 
 	R1 = FREE_USER_AREA_PAGE;
 	R2 = PID;
 	call PROCESS_MANAGER;
 	multipop(R1, R2); 
 
+  // set state of the process as terminated and return to the caller. 
   [PROCESS_TABLE + PID * 16 + 4] = TERMINATED;
   return;
 endif;
 
 if(R1 == FREE_PAGE_TABLE) then
-
   alias page_table R3;
-  page_table = PAGE_TABLE_BASE + PID * 20;
+  page_table = PAGE_TABLE_BASE + PID * 20 ;
 
-  // invalidate pt entries corr to shared library pages.   
+  // invalidate pt entries for library pages.   
   [page_table+0] = -1;
   [page_table+1] = "0000";
   [page_table+2] = -1;
@@ -50,8 +70,6 @@ if(R1 == FREE_PAGE_TABLE) then
 
   // Release the page for each valid page table entry in pt by invoking the release page function.  
   // index -> ith page table entry. 
-
-  // loop through other page table entries. 
   alias index R4;
   index = 0;
   while(index < 10) do
@@ -59,30 +77,29 @@ if(R1 == FREE_PAGE_TABLE) then
     // go through heap and stack entries in disk map table. if any valid entries are found, invoke release block function. 
       // go through heap and stack entries in the disk map table of the process with given PID. If any valid entries are found, invoke the
       // Release Block function in memory manager module. 
+    if(index == 2 || index == 3 || index == 8 || index == 10) then
+      if([DISK_MAP_TABLE + PID * 10 + index] != -1) then
+        multipush(R1, R2, R3, R4);
+        R1 = RELEASE_BLOCK;
+        R2 = [DISK_MAP_TABLE + PID * 10 + index];
+        R3 = PID;
+        call MEMORY_MANAGER;
+        multipop(R1, R2, R3, R4);
+      endif;
 
-    // if entry is valid, free corresponding page by invoking free page table function 
-    if([page_table + index*2] != -1) then
+    endif;
+
+    if([page_table + index*2] != -1 && index != 0) then
+      [page_table + index*2] = -1;
+      [page_table + index*2 + 1] = "0000";
 	    // R1 : function number of release page, R2 : Page Number, R3 : return value (nothing here)
 	    multipush(R0, R1, R2, R3, R4); 
       R1 = RELEASE_PAGE;
   	  R2 = [page_table + index*2];
   	  call MEMORY_MANAGER;
       multipop(R0, R1, R2, R3, R4); 
-      [page_table + index*2] = -1;
-      [page_table + index*2 + 1] = "0000";
     endif;
 
-    if(index == 2 || index == 3 || index == 8 || index == 9) then
-      if([DISK_MAP_TABLE + PID * 10 + index] != -1) then
-        multipush(R0, R1, R2, R3, R4);
-        R1 = RELEASE_BLOCK;
-        R2 = [DISK_MAP_TABLE + PID * 10 + index];
-        R3 = PID;
-        call MEMORY_MANAGER;
-        multipop(R0, R1, R2, R3, R4);
-      endif;
-
-    endif;
     // invalidate all entries of the disk map table. 
     [DISK_MAP_TABLE + PID * 10 + index] = -1;
 
@@ -94,14 +111,15 @@ endif;
 
 if(R1 == FREE_USER_AREA_PAGE) then 
 
-  alias UAPN R0;
+  // obtain user area page number from the process table entry corresponding to the PID given as argument. Then free the user area page by invoking release page function.  
+  alias UAPN R3;
   UAPN = [PROCESS_TABLE + PID * 16 + 11];
 
-	multipush(R0, R1, R2); 
+	multipush(R3, R1, R2); 
   R1 = RELEASE_PAGE;
   R2 = UAPN;
 	call MEMORY_MANAGER;
-	multipop(R0, R1, R2);
+	multipop(R3, R1, R2);
 
   return;
 endif;
