@@ -1,0 +1,23 @@
+int main()
+{
+decl
+    int temp,A, B;
+enddecl
+begin
+	A = 8;
+	B = 9;
+	temp = exposcall ( "Read" , -1, A );
+	temp = exposcall ( "Read" , -1, B );
+	while(B != 0) do
+		if(B>A) then
+			temp = A;
+			A = B;
+			B = temp;
+		else 
+			A = A - B;
+		endif;
+	endwhile;
+	write(A);
+	return 0;
+end
+}

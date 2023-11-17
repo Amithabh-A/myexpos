@@ -1,0 +1,58 @@
+//code : system call interrupt of read system call
+
+// CONSTANTS
+// DEVICE_MANAGER = MOD_4 = 24576
+
+// NOTE : wordAddr should contain the logical address of the word and that should be translated in device_manager_module. But here the physical address of word is passing as argument. 
+
+//set MODE flag to system call number which is 7 for read system call.
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16+9] = 7;
+
+//store value of user SP for future computations
+alias userSP R0;
+userSP = SP;
+
+//switch stack from user stack to kernel stack
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 13] = SP;
+SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 11]*512 - 1;
+
+// Retrieve the file descriptor from the user stack, stored at userSP-4 as arg1 using manual address translation. 
+alias fileDescriptor R4; 
+fileDescriptor=[[PTBR + 2 * ((userSP - 4) / 512)] * 512 + ((userSP - 4) % 512)]; 
+
+if (fileDescriptor != -1)
+then
+     	//store -1 to return.
+     	[[PTBR + 2 * (userSP - 1)/ 512] * 512 + (userSP - 1) % 512] = -1;
+else
+	// Retrieve the word address sent as an argument from the user (userSP-3)
+     	alias wordAddr R5;
+     	wordAddr = [PTBR + 2 * ((userSP - 3) / 512)] * 512 + ((userSP - 3) % 512);
+
+
+	// push all registers used till now in this interrupt in kernel stack
+	multipush(R0, R4, R5); 
+	
+	//store function number of terminal write in R1, PID of the current process in R2 and store word address to which we have to write the word in R3. 
+	R1 = TERMINAL_READ;//TERMINAL_READ = 4
+	R2 = [SYSTEM_STATUS_TABLE+1];
+	R3 = wordAddr;
+	
+	//call module 4
+	call DEVICE_MANAGER;
+
+	// There is no return value for read. 
+	multipop(R0, R4, R5); 
+
+  //store return value 0 in the user stack indicating success
+  [[PTBR + 2 * (userSP - 1)/ 512] * 512 + (userSP - 1) % 512] = 0;
+endif;
+
+
+//reset mode value to 0
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+
+//set SP to userSP
+SP = userSP;
+
+ireturn;

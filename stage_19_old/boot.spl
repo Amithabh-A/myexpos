@@ -1,0 +1,203 @@
+// code : boot module
+
+// CONSTANTS
+// MEMORY_FREE_LIST : points to starting address of memory copy of memory free list present in page 57 of the memory. 
+// MAX_MEM_PAGE = 128 : Total size of memory free list, num of memory pages available to os.
+
+// NOTE : Initial setting of the memory free list should mark pages 76-127 as free (value 0) and the rest as allocated (value 1)
+
+// initializing memory free list
+alias counter R0;
+counter = 0;
+while(counter < MAX_MEM_PAGE) do
+  if(counter >= 76 && counter <= 127) then
+    [MEMORY_FREE_LIST + counter] = 0;
+  else
+    [MEMORY_FREE_LIST + counter] = 1;
+  endif;
+  counter = counter + 1;
+endwhile;
+
+//initialize state field of all process table entries other than idle process to be terminated. 
+counter = 1;
+while(counter < 16) do
+  [PROCESS_TABLE + 16*counter + 4] = TERMINATED;
+  counter = counter + 1;
+endwhile; 
+
+//Required interrupt routines, library, exeption handler, init
+
+// inode table
+loadi(59,3);
+loadi(60,4);
+
+// disk free list
+loadi(61,2);
+
+//timer interrupt routine
+loadi(4,17);
+loadi(5,18);
+
+//console interrupt routine
+loadi(8,21);
+loadi(9,22);
+
+//disk interrupt routine
+loadi(6,19);
+loadi(7,20);
+
+//write : int 6
+loadi(14,27);
+loadi(15,28);
+
+//write : int 7
+loadi(16,29);
+loadi(17,30);
+
+//write : int 9
+loadi(20,33);
+loadi(21,34);
+
+//exit : int 10
+loadi(22,35);
+loadi(23,36);
+//library code
+
+//scheduler
+loadi(50,63);
+loadi(51,64);
+
+loadi(63,13);
+loadi(64,14);
+
+//exeption handler
+loadi(2, 15);
+loadi(3, 16);
+
+// mod 0
+loadi(40,53);
+loadi(41,54);
+
+// mod 1
+loadi(42,55);
+loadi(43,56);
+
+// mod 2
+loadi(44,57);
+loadi(45,58);
+
+// mod 4
+loadi(48,61);
+loadi(49,62);
+
+//init code
+loadi(65,7);
+loadi(66,8);
+
+//even program
+//loadi(86,69);
+
+//prime program
+//loadi(92,70);
+
+//status field of terminal status table set to 0
+[TERMINAL_STATUS_TABLE] = 0;
+//status field of disk status table set to 0
+[DISK_STATUS_TABLE] = 0;
+
+//-------------------------------------------------------------------------------------
+
+//set page table entries for INIT process
+PTBR = PAGE_TABLE_BASE+20;
+PTLR = 10;
+
+//Library
+[PTBR+0] = 63;
+[PTBR+1] = "0100";
+[PTBR+2] = 64;
+[PTBR+3] = "0100";
+
+//Heap
+[MEMORY_FREE_LIST + 78] = 1; 
+[PTBR+4] = 78;
+[PTBR+5] = "0110";
+[MEMORY_FREE_LIST + 79] = 1; 
+[PTBR+6] = 79;
+[PTBR+7] = "0110";
+
+//Code
+[PTBR+8] = 65;
+[PTBR+9] = "0100";
+[PTBR+10] = 66;
+[PTBR+11] = "0100";
+[PTBR+12] = -1;
+[PTBR+13] = "0000";
+[PTBR+14] = -1;
+[PTBR+15] = "0000";
+
+//Stack
+[MEMORY_FREE_LIST + 76] = 1; 
+[PTBR+16] = 76;
+[PTBR+17] = "0110";
+[MEMORY_FREE_LIST + 77] = 1; 
+[PTBR+18] = 77;
+[PTBR+19] = "0110";
+
+//initialise process table entry for init process
+[PROCESS_TABLE + 16 + 1] = 1; //PID
+[MEMORY_FREE_LIST + 80] = 1; 
+[PROCESS_TABLE + 16 + 11] = 80;//user area page number
+[PROCESS_TABLE + 16 + 13] = 8*512;//UPTR
+[PROCESS_TABLE + 16 + 12] = 0;//KPTR
+[PROCESS_TABLE + 16 + 14] = PAGE_TABLE_BASE+20;//PTBR
+[PROCESS_TABLE + 16 + 15] = 10;//PTLR
+
+//set process state to be created.
+[PROCESS_TABLE + 16 + 4] = CREATED;
+
+//transfer entry point value from header to top of the user stack of the init process
+[76*512] = [65*512+1];
+
+// initialize disk map table of the process. 
+[DISK_MAP_TABLE + 1 * 10 + 4 ] = 7; 
+[DISK_MAP_TABLE + 1 * 10 + 5 ] = 8; 
+alias dmt_index R0;
+dmt_index = 0;
+while(dmt_index < 10) do
+  if(dmt_index != 4 || dmt_index != 5) then
+    [DISK_MAP_TABLE + 1 * 10 + dmt_index ] = -1; 
+  endif;
+  dmt_index = dmt_index + 1;
+endwhile;
+
+// setting per process resource table. 
+alias base R0;
+alias bound R1;
+base = [PROCESS_TABLE + 16 + 11] * 512 + 496;
+bound = [PROCESS_TABLE + 16 + 11] * 512 + 512;
+alias index_init R2;
+index_init = base;
+while(index_init < bound) do
+  [index_init] = -1;
+  index_init = index_init + 2;
+endwhile;
+
+//-------------------------------------------------------------------------------------
+
+// initialize fields WAIT_MEM_COUNT to 0 and MEM_FREE_COUNT to no of free pages available in system status table. 
+// NOTE : MEM_FREE_COUNT is storing no of user pages that are free. 
+
+[SYSTEM_STATUS_TABLE + 3] = 0;
+alias counter R0;
+counter = 0;
+alias memFreeCount R1;
+memFreeCount = 0;
+while(counter <= MAX_MEM_PAGE ) do
+  if([MEMORY_FREE_LIST + counter] == 0) then
+    memFreeCount = memFreeCount + 1;
+  endif;
+  counter = counter + 1;
+endwhile;
+[SYSTEM_STATUS_TABLE + 2] = memFreeCount;
+
+return;

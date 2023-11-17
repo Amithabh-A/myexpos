@@ -1,0 +1,17 @@
+//code : system call interrupt of exit system call
+
+// Description : terminates execution of process which invoked it and destroys its memory address space. 
+//               Exit system call never returns. 
+
+//set MODE flag to system call number which is 10 for read system call.
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16+9] = 10;
+
+//switch stack from user stack to kernel stack
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 13] = SP;
+SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1] * 16) + 11]*512 - 1;
+
+R1 = EXIT_PROCESS;
+R2 = [SYSTEM_STATUS_TABLE + 1];
+call PROCESS_MANAGER;
+
+call SCHEDULER;

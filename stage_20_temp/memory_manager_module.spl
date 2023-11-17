@@ -1,0 +1,133 @@
+//This is memory manager module
+// print "memorymod";
+
+// Doubt : 
+// why is PID an argument to disk release function? 
+
+// CONSTANTS
+// GET_FREE_PAGE = 1
+// RELEASE_PAGE = 2
+// GET_CODE_PAGE = 5
+// MEMORY_FREE_LIST : points to starting address of memory copy of memory free list present in page 57 of the memory. 
+// MAX_MEM_PAGE = 128 : Total size of memory free list, num of memory pages available to os. 
+
+// NOTE : Get Code Page function : 
+//          loads a single code page to memory given the block number of the page is in the disk. 
+//          it takes block num and PID as argument. 
+
+// Function number, arguments and return value
+alias functionNum R1;
+alias argument R2;
+
+if(functionNum == RELEASE_BLOCK) then
+  alias blockNum R2;
+  alias PID R3;
+  [DISK_FREE_LIST + blockNum] = [DISK_FREE_LIST + blockNum] - 1;
+  return;
+endif;
+
+if(R1 == GET_CODE_PAGE) then
+  alias blockNum R2;
+  alias pageNum R0;
+
+  // if req code page is already loaded by some other processes, increment mem_free_list entry. 
+  alias PID R4;
+  alias index R5;
+  PID = 0;
+  while(PID < 16) do
+    index = 4;
+    while(index <= 7 ) do
+
+      // if blockNum matches with a code block number in disk map table and if its corr. page table entry is set to valid
+      if(blockNum == [DISK_MAP_TABLE + PID * 10 + index] && [[PROCESS_TABLE + PID * 16 + 14] + index * 2 + 1 ] == "1100" ) then
+      
+        // there is a memory page where disk block is loaded. It can be fetched using page table of process having pid PID.
+        pageNum = [[PROCESS_TABLE + PID * 16 + 14] + index * 2];
+        //code pages : 4,5,6,7
+
+
+        // increment the share count of page in Mem free list. 
+        [MEMORY_FREE_LIST + pageNum] = [MEMORY_FREE_LIST + pageNum] + 1;
+
+        return;
+      endif;
+
+      index = index+1;
+    endwhile;
+
+    PID = PID + 1;
+  endwhile;
+
+  // The code page is not in the memory, and has to be loaded from the disk. 
+  multipush(R1, R2);
+  R1 = GET_FREE_PAGE;
+  call MEMORY_MANAGER;
+  multipop(R1, R2);
+  pageNum = R0;
+  multipush(R0, R1, R2);
+
+// debug
+  
+  R1 = DISK_LOAD;
+  R4 = blockNum;
+  R2 = [SYSTEM_STATUS_TABLE + 1];
+  R3 = pageNum;
+  call DEVICE_MANAGER;
+  multipop(R0, R1, R2);
+
+  // return memory pageNum to which code block has been loaded. 
+  breakpoint;
+  return;
+endif;
+
+if(R1 == RELEASE_PAGE) then
+  alias pageNum R2;
+  
+  // Decrement the entry of pageNum in memory free list. If that entry become 0, increment MEM_FREE_COUNT in system status table. 
+  [MEMORY_FREE_LIST + pageNum] = [MEMORY_FREE_LIST + pageNum] - 1;
+  if([MEMORY_FREE_LIST + pageNum] == 0) then 
+    [SYSTEM_STATUS_TABLE + 2] = [SYSTEM_STATUS_TABLE + 2] + 1;
+  endif;
+  
+  // update the STATUS to READY for all the processes (with valid PID) which have STATUS as WAIT_MEM. 
+  alias counter R0;
+  counter = 0;
+  while(counter < 16 ) do
+    if([PROCESS_TABLE + counter * 16 + 4] == WAIT_MEM) then
+      [PROCESS_TABLE + counter * 16 + 4] = READY; 
+    endif;
+    counter = counter + 1;
+  endwhile;
+
+  return;
+endif;
+
+if(R1 == GET_FREE_PAGE) then
+
+  // increment WAIT_MEM_COUNT in system status table. 
+  [SYSTEM_STATUS_TABLE+3] = [SYSTEM_STATUS_TABLE+3] + 1;
+
+  // while memory is full(MEM_FREE_COUNT = 0), do the following : 
+
+  while([SYSTEM_STATUS_TABLE+2] == 0) do
+    [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1] * 16 + 4] = WAIT_MEM;
+    call SCHEDULER;
+  endwhile;
+
+  // decrement WAIT_MEM_COUNT and MEM_FREE_COUNT in system status table. 
+  [SYSTEM_STATUS_TABLE+3] = [SYSTEM_STATUS_TABLE+3] - 1;
+  [SYSTEM_STATUS_TABLE+2] = [SYSTEM_STATUS_TABLE+2] - 1;
+
+  // find a free page using memory free list and set the corresponding entry as 1. 
+  alias freePage R0;
+  freePage = 0;
+  while(freePage <= MAX_MEM_PAGE) do
+    if([MEMORY_FREE_LIST + freePage] == 0) then
+      [MEMORY_FREE_LIST + freePage] = 1;
+      break;
+    endif;
+    freePage = freePage + 1;
+  endwhile;
+
+  return;
+endif;
