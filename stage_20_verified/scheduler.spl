@@ -1,0 +1,44 @@
+// code : scheduler
+
+//push BP of the current process on top of the stack
+multipush(BP);
+
+//get current pid.
+alias currentPID R0;
+currentPID = [SYSTEM_STATUS_TABLE+1];
+
+//save SP%512, PTBR and PTLR in process table entry of the current process
+[PROCESS_TABLE + currentPID * 16 + 12] = SP % 512;
+[PROCESS_TABLE + currentPID * 16 + 14] = PTBR;
+[PROCESS_TABLE + currentPID * 16 + 15] = PTLR;
+
+// scheduler must decide which process to run next.
+// Round Robin Scheduling Algorithm
+
+alias newPID R2;
+newPID = (currentPID+1)%16;
+while([PROCESS_TABLE + newPID * 16 + 4] != READY && [PROCESS_TABLE + newPID * 16 + 4] != CREATED ) do
+  newPID = (newPID+1)%16;
+endwhile;
+
+//set SP, PTBR and PTLR. 
+SP = [PROCESS_TABLE + newPID * 16 + 11] * 512 + [PROCESS_TABLE + newPID * 16 + 12] % 512;
+PTLR = [PROCESS_TABLE + newPID * 16 + 15];
+PTBR = [PROCESS_TABLE + newPID * 16 + 14];
+
+//set PID in SYSTEM STATUS TABLE
+[SYSTEM_STATUS_TABLE+1] = newPID;
+
+if([PROCESS_TABLE + newPID * 16 + 4] == CREATED) then 
+  BP = [[PROCESS_TABLE + newPID*16 + 11]*512];
+  SP = [PROCESS_TABLE + newPID * 16 + 13];
+  [PROCESS_TABLE + newPID * 16 + 4] = RUNNING;
+ [PROCESS_TABLE + newPID * 16 + 9] = 0;
+  ireturn;
+endif;
+
+//set state of new process to be RUNNING and restore BP of new process from top of its kernel stack. 
+[PROCESS_TABLE + newPID * 16 + 4] = RUNNING;
+multipop(BP);
+
+return;

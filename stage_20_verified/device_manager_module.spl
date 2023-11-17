@@ -1,0 +1,105 @@
+//This is Device manager module
+// print "devicemod";
+
+// CONSTANTS
+// DISK_LOAD = 2
+// TERMINAL_READ = 3
+// TERMINAL_WRITE = 4
+// ACQUIRE_TERMINAL = 8
+// RELEASE_TERMINAL = 9
+// RESOURCE_MANAGER = MOD_0 = 20480
+// DISK_STATUS_TABLE = 29552
+
+// IMPORTANT INFORMATION : Loading from the disk to the memory of the XSM machine can also be accomplished using loadi statement in SPL. 
+//                         But here, the machine will continue execution of the next instruction only after the block transfer is completed.
+  
+// NOTE : Disk status table -> it just store status, page and block number in which diskio/diskwrite is happening. 
+
+// Doubt and clarification : 
+// It seems like there is no need for multipushing. When multipushing, we are saving R1, R2, R3 and R4. But, okay we are not returning... 
+// The process will reschedule after state set to ready and after coming here we return. 
+
+//function number and current PID
+alias functionNum R1;
+alias currentPID R2;
+
+if(functionNum == DISK_LOAD) then
+
+  // Arguments : PID of a process, pageNumber, blockNumber
+  // returnValue : NIL
+  
+  alias PID R2;
+  alias pageNum R3;
+  alias blockNum R4;
+
+  // acquire disk
+  multipush(R1, R2, R3, R4);
+  R1 = ACQUIRE_DISK;
+  R2 = PID;
+  call RESOURCE_MANAGER;
+  multipop(R1, R2, R3, R4);
+
+
+  // set disk status table 
+  // reset load/store bit, set pageNumber and blockNumber 
+  [DISK_STATUS_TABLE + 1] = 0;
+  [DISK_STATUS_TABLE + 2] = pageNum;
+  [DISK_STATUS_TABLE + 3] = blockNum;
+
+  // breakpoint;
+  load(pageNum, blockNum);
+
+  [PROCESS_TABLE + PID * 16 + 4] = WAIT_DISK;
+  
+  multipush(R1, R2, R3, R4);
+  call SCHEDULER;
+  multipop(R1, R2, R3, R4);
+
+  return;
+endif;
+
+if(functionNum == TERMINAL_WRITE) then
+
+	multipush(R1, R2); 	
+	R1 = ACQUIRE_TERMINAL;
+	R2 = [SYSTEM_STATUS_TABLE+1];
+	call RESOURCE_MANAGER;
+	multipop(R1, R2); 	
+
+	print R3;
+
+	multipush(R1, R2, R3); 	
+	R1 = RELEASE_TERMINAL;
+	R2 = [SYSTEM_STATUS_TABLE+1];
+	call RESOURCE_MANAGER;
+	R4 = R0;
+	multipop(R1, R2, R3); 	
+	return;
+endif;
+
+if(functionNum == TERMINAL_READ) then
+
+	multipush(R1, R2, R3); 	
+	R1 = ACQUIRE_TERMINAL;
+	R2 = [SYSTEM_STATUS_TABLE+1];
+	call RESOURCE_MANAGER;
+	multipop(R1, R2, R3);	
+
+	read;
+
+	//change the state of the current process to wait_terminal and call scheduler. 
+	[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1] * 16 + 4] = WAIT_TERMINAL;
+	multipush(R1, R2, R3);
+	call SCHEDULER;
+	multipop(R1, R2, R3);
+
+	//logical address of the word where data has to be stored is in R3. Convert this to phyAddr and store val present in input buffer of pt into obtained phyAddr loc. 	
+
+	// physicalPageNumber = [PTBR + 2 * ([R3]/ 512)];
+	// offset = [R3] % 512;
+	alias PhysicalAddr R6; 
+	PhysicalAddr = ([PTBR + 2 * ([R3]/ 512)] * 512) + ([R3] % 512);
+	[PhysicalAddr] = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1] * 16 + 8];
+
+	return;
+endif;
