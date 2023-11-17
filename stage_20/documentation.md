@@ -17,3 +17,31 @@
 * Each entry corr to a block in disk free list contains 0 (free) or 1 (used). 
 * OS startup code loads disk free list to memory and stored back when system halts or shut down. 
 * DISK FREE LIST points to starting addr. 
+
+
+# stage 19
+EC - cause of the exception
+EIP - logical IP
+EPN - logical PageNum of address caused PAGE FAULT
+EMA - exception MemAddr(rel for illegalMemAccess)
+
+graceful halt : 
+1. illegal memAccess
+2. illegalInstr
+3. arithmeticException
+
+page fault - reason : os has not loaded the page -> resumes execution after allocating req pages.  
+1. invalid page
+2. invalid page table entry
+
+page fault types
+1. heap 
+2. code - lazy allocation(bcz one page only alloc) - mem utilization better
+
+dmt - logical page to disk block mapping -  10 words
+
+getCodePage - takes block num and return memPage containing tht blockData
+            - uses getFreePage, diskLoad and load only if curPage not loaded earlier(chk all dmt)
+
+exceptionHandler - loading dfl, not manipulating. 
+                 - 

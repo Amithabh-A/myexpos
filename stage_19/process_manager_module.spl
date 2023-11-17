@@ -21,21 +21,18 @@ alias PID R2;
 
 if(R1 == EXIT_PROCESS) then
   
-  // invoke free page table function with same PID to deallocate pt entries, then invoke free user area page function with the same PID to free User Area Page. 
-	// R1 : function number of free page table function, R2 : PID of the process, R3 : return value (nothing here)
-
 	multipush(R1, R2); 
 	R1 = FREE_PAGE_TABLE;
 	R2 = PID;
 	call PROCESS_MANAGER;
 	multipop(R1, R2); 
+
 	multipush(R1, R2); 
 	R1 = FREE_USER_AREA_PAGE;
 	R2 = PID;
 	call PROCESS_MANAGER;
 	multipop(R1, R2); 
 
-  // set state of the process as terminated and return to the caller. 
   [PROCESS_TABLE + PID * 16 + 4] = TERMINATED;
   return;
 endif;
@@ -97,7 +94,6 @@ endif;
 
 if(R1 == FREE_USER_AREA_PAGE) then 
 
-  // obtain user area page number from the process table entry corresponding to the PID given as argument. Then free the user area page by invoking release page function.  
   alias UAPN R0;
   UAPN = [PROCESS_TABLE + PID * 16 + 11];
 
