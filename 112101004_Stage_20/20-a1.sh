@@ -6,7 +6,7 @@ load --int=timer ../stage_20/timer_interrupt_handler.xsm
 load --int=console ../stage_20/console_interrupt_handler.xsm
 load --int=disk ../stage_20/disk_interrupt_handler.xsm
 load --exhandler ../stage_20/exception_handler.xsm
-load --os ../spl_progs/os_startup.xsm
+load --os ../stage_20/os_startup.xsm
 load --init ../stage_20/fork.xsm
 load --idle ../expl/samples/idle.xsm
 load --library ../expl/library.lib
